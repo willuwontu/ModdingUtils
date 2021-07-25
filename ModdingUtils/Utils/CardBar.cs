@@ -21,9 +21,9 @@ namespace ModdingUtils.Utils
         public static readonly CardBarUtils instance = new CardBarUtils();
 
         private static readonly float displayDuration = 1.5f;
-        private static readonly Vector3 localShift = new Vector3(-50f, 0f, 0f);
-        private static readonly float barlocalScaleMult = 1.1f;
-        private static readonly float cardLocalScaleMult = 1f;
+        public static readonly Vector3 localShift = new Vector3(-50f, 0f, 0f);
+        public static readonly float barlocalScaleMult = 1.1f;
+        public static readonly float cardLocalScaleMult = 1f;
 
         private DictionaryOfLists<Player, CardInfo> cardsToShow = new DictionaryOfLists<Player, CardInfo>() { };
 
@@ -35,11 +35,11 @@ namespace ModdingUtils.Utils
             }
         }
 
-        private CardBar PlayersCardBar(int teamID)
+        public CardBar PlayersCardBar(int teamID)
         {
             return this.CardBars[teamID];
         }
-        private CardBar PlayersCardBar(Player player)
+        public CardBar PlayersCardBar(Player player)
         {
             return this.CardBars[player.teamID];
         }
@@ -213,6 +213,23 @@ namespace ModdingUtils.Utils
             return this.ChangePlayersBarColor(player.teamID, color);
         }
 
+        public Color GetCardSquareColor(GameObject cardSquare)
+        {
+            List<Graphic> graphics = cardSquare.GetComponentsInChildren<Graphic>().ToList();
+            return graphics[0].color;
+        }
+        public Color ChangeCardSquareColor(GameObject cardSquare, Color color)
+        {
+            List<Graphic> graphics = cardSquare.GetComponentsInChildren<Graphic>().ToList();
+            Color orig = graphics[0].color;
+
+            foreach(Graphic graphic in graphics)
+            {
+                graphic.color = color;
+            }
+            return orig;
+        }
+
         public static void SilentAddToCardBar(int teamID, CardInfo card, string twoLetterCode = "")
         {
             Traverse.Create(CardBarUtils.instance.PlayersCardBar(teamID)).Field("ci").SetValue(card);
@@ -267,7 +284,7 @@ namespace ModdingUtils.Utils
                     Color.RGBToHSV(this.GetPlayersBarColor(player), out float h, out float s, out float v);
                     this.ChangePlayersBarColor(player, Color.HSVToRGB(h, s + 0.1f, v + 0.1f));
                 }
-                foreach (CardInfo card in this.cardsToShow[player])
+                foreach (CardInfo card in this.cardsToShow[player].Where(card => player.data.currentCards.Select(card => card.name).Contains(card.name)))
                 {
 
                     this.ShowCard(player, card);
