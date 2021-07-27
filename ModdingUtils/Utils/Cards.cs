@@ -636,6 +636,10 @@ namespace ModdingUtils.Utils
             {
                 return false;
             }
+            if (player == null)
+            {
+                return true;
+            }
             bool blacklisted = false;
 
             foreach (CardInfo currentCard in player.data.currentCards)
