@@ -20,6 +20,7 @@ namespace ModdingUtils.Utils
         public static readonly Cards instance = new Cards();
         private static readonly System.Random rng = new System.Random();
         private List<CardInfo> hiddenCards = new List<CardInfo>() { };
+        private List<Action<CardInfo, int>> removalCallbacks = new List<Action<CardInfo, int>>(){};
 
         private List<CardInfo> ACTIVEANDHIDDENCARDS
         {
@@ -42,6 +43,12 @@ namespace ModdingUtils.Utils
         {
             Cards instance = this;
         }
+
+        public void AddOnRemoveCallback(Action<CardInfo,int> callback)
+        {
+            this.removalCallbacks.Add(callback);
+        }
+
         public void AddCardToPlayer(Player player, CardInfo card, bool reassign = false, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f)
         {
             // adds the card "card" to the player "player"
@@ -185,6 +192,18 @@ namespace ModdingUtils.Utils
                 // then add back only the ones we didn't remove, marking them as reassignments
                 this.AddCardsToPlayer(player, newCards.ToArray(), true);
             });
+
+            // run all callbacks
+            foreach (Action<CardInfo, int> callback in this.removalCallbacks)
+            {
+                try
+                {
+                    callback(originalCards[idx], idx);
+                }
+                catch
+                { }
+            }
+
             // return the card that was removed
             return originalCards[idx];
         }
@@ -247,6 +266,21 @@ namespace ModdingUtils.Utils
                 // then add back only the ones we didn't remove
                 this.AddCardsToPlayer(player, newCards.ToArray(), true);
             });
+
+            // run all callbacks
+            foreach (Action<CardInfo, int> callback in this.removalCallbacks)
+            {
+                foreach(int indx in indecesToRemove)
+                {
+                    try
+                    {
+                        callback(originalCards[indx], indx);
+                    }
+                    catch
+                    { }
+                }
+            }
+
             // return the number of cards removed
             return indecesToRemove.Count;
         }
