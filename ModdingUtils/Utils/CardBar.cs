@@ -72,21 +72,25 @@ namespace ModdingUtils.Utils
 
         public void ShowCard(Player player, CardInfo card)
         {
-            this.ShowCard(player.teamID, card);
+            this.ShowCard(player.teamID, card.name);
         }
         public void ShowCard(int teamID, CardInfo card)
         {
-            this.ShowCard(teamID, Cards.instance.GetCardID(card));
+            this.ShowCard(teamID, card.name);
         }
         public void ShowCard(Player player, int cardID)
         {
-            this.ShowCard(player.teamID, cardID);
+            this.ShowCard(player.teamID, Cards.instance.GetCardWithID(cardID).name);
         }
         public void ShowCard(int teamID, int cardID)
         {
+            this.ShowCard(teamID, Cards.instance.GetCardWithID(cardID).name);
+        }
+        public void ShowCard(int teamID, string cardName)
+        {
             if (PhotonNetwork.OfflineMode || PhotonNetwork.IsMasterClient)
             {
-                NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_ShowCard), new object[] { teamID, Cards.instance.GetCardWithID(cardID).name });
+                NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_ShowCard), new object[] { teamID, cardName });
             }
         }
 

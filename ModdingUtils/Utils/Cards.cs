@@ -21,7 +21,14 @@ namespace ModdingUtils.Utils
         private static readonly System.Random rng = new System.Random();
         private List<CardInfo> hiddenCards = new List<CardInfo>() { };
         private List<Action<CardInfo, int>> removalCallbacks = new List<Action<CardInfo, int>>(){};
-
+        private List<CardInfo> allCards
+        {
+            get
+            {
+                return ((List<CardInfo>)typeof(Unbound).GetField("activeCards", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null)).Concat((List<CardInfo>)typeof(Unbound).GetField("inactiveCards", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null)).Concat(this.hiddenCards).ToList();
+            }
+            set { }
+        }
         private List<CardInfo> ACTIVEANDHIDDENCARDS
         {
             get
@@ -528,7 +535,7 @@ namespace ModdingUtils.Utils
 
             for (int i = 0; i < actorIDs.Length; i++)
             {
-                CardInfo[] cards = Cards.instance.ACTIVEANDHIDDENCARDS.ToArray();
+                CardInfo[] cards = Cards.instance.allCards.ToArray();
                 ApplyCardStats cardStats = cards[cardID].gameObject.GetComponentInChildren<ApplyCardStats>();
 
                 // call Start to initialize card stat components for base-game cards
@@ -737,6 +744,31 @@ namespace ModdingUtils.Utils
             }
 
         }
+        public CardInfo DrawRandomCardWithCondition(CardInfo[] cardsToDrawFrom, Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition, int maxattempts = 1000)
+        {
+
+            // pseudorandom number generator
+            int rID = rng.Next(0, cardsToDrawFrom.Length); // random card index
+
+            int i = 0;
+
+            // draw a random card until it's an uncommon or the maximum number of attempts was reached
+            while (!(condition(cardsToDrawFrom[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && this.PlayerIsAllowedCard(player, cardsToDrawFrom[rID])) && i < maxattempts)
+            {
+                rID = rng.Next(0, cardsToDrawFrom.Length);
+                i++;
+            }
+
+            if (!(condition(cardsToDrawFrom[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && this.PlayerIsAllowedCard(player, cardsToDrawFrom[rID])))
+            {
+                return null;
+            }
+            else
+            {
+                return cardsToDrawFrom[rID];
+            }
+
+        }
         // get random card using the base-game's spawn method (which respects rarities), also satisfying some conditions - always including PlayerIsAllowedCard
         public CardInfo GetRandomCardWithCondition(Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition, int maxattempts = 1000)
         {
@@ -768,15 +800,29 @@ namespace ModdingUtils.Utils
         }
         public int GetCardID(string cardName)
         {
-            return this.ACTIVEANDHIDDENCARDS.Where(card => card.name == cardName).Select(card => this.GetCardID(card)).FirstOrDefault();
+            try
+            {
+                return this.allCards.Where(card => card.name == cardName).Select(card => this.GetCardID(card)).First();
+            }
+            catch
+            {
+                return -1;
+            }
         }
         public int GetCardID(CardInfo card)
         {
-            return Array.IndexOf(this.ACTIVEANDHIDDENCARDS.ToArray(), card);
+            return Array.IndexOf(this.allCards.ToArray(), card);
         }
         public CardInfo GetCardWithID(int cardID)
         {
-            return this.ACTIVEANDHIDDENCARDS[cardID];
+            try
+            {
+                return this.allCards[cardID];
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public static void SilentAddToCardBar(int teamID, CardInfo card, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f)
