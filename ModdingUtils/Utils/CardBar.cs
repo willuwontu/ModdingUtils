@@ -306,8 +306,9 @@ namespace ModdingUtils.Utils
             this.Reset();
             yield break;
         }
-        public System.Collections.IEnumerator ShowImmediate(int teamID, int cardID)
+        public System.Collections.IEnumerator ShowImmediate(int teamID, int cardID, float? duration = null)
         {
+            float displayDuration = duration ?? CardBarUtils.displayDuration;
 
             Color orig = this.GetPlayersBarColor(teamID);
 
@@ -319,7 +320,7 @@ namespace ModdingUtils.Utils
 
 
             this.ShowCard(teamID, cardID);
-            yield return new WaitForSecondsRealtime(CardBarUtils.displayDuration);
+            yield return new WaitForSecondsRealtime(displayDuration);
             this.HideCard(teamID);
 
 
@@ -332,20 +333,70 @@ namespace ModdingUtils.Utils
             yield break;
         }
 
+        public System.Collections.IEnumerator ShowImmediate(Player player, int cardID, float? duration = null)
+        {
+            return this.ShowImmediate(player.teamID, cardID, duration);
+        }
+        public System.Collections.IEnumerator ShowImmediate(Player player, CardInfo card, float? duration = null)
+        {
+            return this.ShowImmediate(player.teamID, Cards.instance.GetCardID(card), duration);
+        }
+        public System.Collections.IEnumerator ShowImmediate(int teamID, CardInfo card, float? duration = null)
+        {
+            return this.ShowImmediate(teamID, Cards.instance.GetCardID(card), duration);
+        }
+        public System.Collections.IEnumerator ShowImmediate(Player player, int[] cardIDs, float? duration = null)
+        {
+            return this.ShowImmediate(player.teamID, cardIDs, duration);
+        }
+        public System.Collections.IEnumerator ShowImmediate(int teamID, CardInfo[] cards, float? duration = null)
+        {
+            List<int> cardIDs = new List<int>() { };
+            foreach (CardInfo card in cards)
+            {
+                cardIDs.Add(Cards.instance.GetCardID(card));
+            }
+
+            return this.ShowImmediate(teamID, cardIDs.ToArray(), duration);
+        }
+        public System.Collections.IEnumerator ShowImmediate(Player player, CardInfo[] cards, float? duration = null)
+        {
+            List<int> cardIDs = new List<int>() { };
+            foreach (CardInfo card in cards)
+            {
+                cardIDs.Add(Cards.instance.GetCardID(card));
+            }
+
+            return this.ShowImmediate(player.teamID, cardIDs.ToArray(), duration);
+        }
         public System.Collections.IEnumerator ShowImmediate(Player player, int cardID)
         {
-            return this.ShowImmediate(player.teamID, cardID);
+            return ShowImmediate(player, cardID, null);
         }
         public System.Collections.IEnumerator ShowImmediate(Player player, CardInfo card)
         {
-            return this.ShowImmediate(player.teamID, Cards.instance.GetCardID(card));
+            return ShowImmediate(player, card, null);
         }
         public System.Collections.IEnumerator ShowImmediate(int teamID, CardInfo card)
         {
-            return this.ShowImmediate(teamID, Cards.instance.GetCardID(card));
+            return ShowImmediate(teamID, card, null);
         }
-        public System.Collections.IEnumerator ShowImmediate(int teamID, int[] cardIDs)
+        public System.Collections.IEnumerator ShowImmediate(Player player, int[] cardIDs)
         {
+            return ShowImmediate(player, cardIDs, null);
+        }
+        public System.Collections.IEnumerator ShowImmediate(int teamID, CardInfo[] cards)
+        {
+            return ShowImmediate(teamID, cards, null);
+        }
+        public System.Collections.IEnumerator ShowImmediate(Player player, CardInfo[] cards)
+        {
+            return ShowImmediate(player, cards, null);
+        }
+        public System.Collections.IEnumerator ShowImmediate(int teamID, int[] cardIDs, float? duration = null)
+        {
+            float displayDuration = duration ?? CardBarUtils.displayDuration;
+
             Color orig = this.GetPlayersBarColor(teamID);
 
             this.PlayersCardBar(teamID).gameObject.transform.localScale = Vector3.one * Utils.CardBarUtils.barlocalScaleMult;
@@ -357,7 +408,7 @@ namespace ModdingUtils.Utils
             foreach (int cardID in cardIDs)
             {
                 this.ShowCard(teamID, cardID);
-                yield return new WaitForSecondsRealtime(CardBarUtils.displayDuration);
+                yield return new WaitForSecondsRealtime(displayDuration);
                 this.HideCard(teamID);
             }
 
@@ -369,30 +420,7 @@ namespace ModdingUtils.Utils
 
             yield break;
         }
-        public System.Collections.IEnumerator ShowImmediate(Player player, int[] cardIDs)
-        {
-            return this.ShowImmediate(player.teamID, cardIDs);
-        }
-        public System.Collections.IEnumerator ShowImmediate(int teamID, CardInfo[] cards)
-        {
-            List<int> cardIDs = new List<int>() { };
-            foreach (CardInfo card in cards)
-            {
-                cardIDs.Add(Cards.instance.GetCardID(card));
-            }
-
-            return this.ShowImmediate(teamID, cardIDs.ToArray());
-        }
-        public System.Collections.IEnumerator ShowImmediate(Player player, CardInfo[] cards)
-        {
-            List<int> cardIDs = new List<int>() { };
-            foreach (CardInfo card in cards)
-            {
-                cardIDs.Add(Cards.instance.GetCardID(card));
-            }
-
-            return this.ShowImmediate(player.teamID, cardIDs.ToArray());
-        }
+        
         public void ClearCardBar(Player player)
         {
             if (PhotonNetwork.OfflineMode)

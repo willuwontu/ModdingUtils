@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 using System.Linq;
 using UnboundLib;
@@ -11,6 +12,7 @@ using UnboundLib.Networking;
 using UnityEngine;
 using TMPro;
 using ModdingUtils.Extensions;
+using UnboundLib.Utils;
 
 namespace ModdingUtils.Utils
 {
@@ -25,7 +27,7 @@ namespace ModdingUtils.Utils
         {
             get
             {
-                return ((List<CardInfo>)typeof(Unbound).GetField("activeCards", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null)).Concat((List<CardInfo>)typeof(Unbound).GetField("inactiveCards", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null)).Concat(this.hiddenCards).ToList();
+                return ((ObservableCollection<CardInfo>)typeof(CardManager).GetField("activeCards", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null)).ToList().Concat((List<CardInfo>)typeof(CardManager).GetField("inactiveCards", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null)).Concat(this.hiddenCards).ToList();
             }
             set { }
         }
