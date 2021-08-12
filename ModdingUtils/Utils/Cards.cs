@@ -22,7 +22,7 @@ namespace ModdingUtils.Utils
         public static readonly Cards instance = new Cards();
         private static readonly System.Random rng = new System.Random();
         private List<CardInfo> hiddenCards = new List<CardInfo>() { };
-        private List<Action<CardInfo, int>> removalCallbacks = new List<Action<CardInfo, int>>(){};
+        private List<Action<Player, CardInfo, int>> removalCallbacks = new List<Action<Player, CardInfo, int>>(){};
         private List<CardInfo> allCards
         {
             get
@@ -53,7 +53,7 @@ namespace ModdingUtils.Utils
             Cards instance = this;
         }
 
-        public void AddOnRemoveCallback(Action<CardInfo,int> callback)
+        public void AddOnRemoveCallback(Action<Player, CardInfo, int> callback)
         {
             this.removalCallbacks.Add(callback);
         }
@@ -203,11 +203,11 @@ namespace ModdingUtils.Utils
             });
 
             // run all callbacks
-            foreach (Action<CardInfo, int> callback in this.removalCallbacks)
+            foreach (Action<Player, CardInfo, int> callback in this.removalCallbacks)
             {
                 try
                 {
-                    callback(originalCards[idx], idx);
+                    callback(player, originalCards[idx], idx);
                 }
                 catch
                 { }
@@ -277,13 +277,13 @@ namespace ModdingUtils.Utils
             });
 
             // run all callbacks
-            foreach (Action<CardInfo, int> callback in this.removalCallbacks)
+            foreach (Action<Player, CardInfo, int> callback in this.removalCallbacks)
             {
                 foreach(int indx in indecesToRemove)
                 {
                     try
                     {
-                        callback(originalCards[indx], indx);
+                        callback(player, originalCards[indx], indx);
                     }
                     catch
                     { }

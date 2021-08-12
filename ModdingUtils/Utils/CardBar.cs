@@ -128,6 +128,39 @@ namespace ModdingUtils.Utils
         {
             CardBarUtils.instance.PlayersCardBar(teamID).StopHover();
         }
+        [UnboundRPC]
+        private static void RPCA_HighlightCardBar(int teamID)
+        {
+            CardBarUtils.instance.PlayersCardBar(teamID).gameObject.transform.localScale = Vector3.one * Utils.CardBarUtils.barlocalScaleMult;
+            CardBarUtils.instance.PlayersCardBar(teamID).gameObject.transform.localPosition += CardBarUtils.localShift;
+            CardBarUtils.instance.ChangePlayersLineColor(teamID, Color.white);
+            Color.RGBToHSV(CardBarUtils.instance.GetPlayersBarColor(teamID), out float h, out float s, out float v);
+            CardBarUtils.instance.ChangePlayersBarColor(teamID, Color.HSVToRGB(h, s + 0.1f, v + 0.1f));
+        }
+        [UnboundRPC]
+        private static void RPCA_UnhighlightCardBar(int teamID, float r, float g, float b, float a)
+        {
+            CardBarUtils.instance.PlayersCardBar(teamID).gameObject.transform.localScale = Vector3.one * 1f;
+            CardBarUtils.instance.PlayersCardBar(teamID).gameObject.transform.localPosition -= CardBarUtils.localShift;
+            CardBarUtils.instance.ResetPlayersLineColor(teamID);
+            CardBarUtils.instance.ChangePlayersBarColor(teamID, new Color(r,g,b,a));
+        }
+        public Color HighlightCardBar(int teamID)
+        {
+            Color orig = this.GetPlayersBarColor(teamID);
+            if (PhotonNetwork.OfflineMode || PhotonNetwork.IsMasterClient)
+            {
+                NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_HighlightCardBar), new object[] { teamID });
+            }
+            return orig;
+        }
+        public void UnhighlightCardBar(int teamID, Color original_color)
+        {
+            if (PhotonNetwork.OfflineMode || PhotonNetwork.IsMasterClient)
+            {
+                NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_UnhighlightCardBar), new object[] { teamID, original_color.r, original_color.g, original_color.b, original_color.a });
+            }
+        }
         public GameObject GetCardBarSquare(int teamID, int idx)
         {
             return this.GetCardBarSquares(teamID)[idx + 1];
@@ -282,11 +315,7 @@ namespace ModdingUtils.Utils
 
                 if (this.cardsToShow[player].Count > 0)
                 {
-                    this.PlayersCardBar(player).gameObject.transform.localScale = Vector3.one * Utils.CardBarUtils.barlocalScaleMult;
-                    this.PlayersCardBar(player).gameObject.transform.localPosition += CardBarUtils.localShift;
-                    this.ChangePlayersLineColor(player, Color.white);
-                    Color.RGBToHSV(this.GetPlayersBarColor(player), out float h, out float s, out float v);
-                    this.ChangePlayersBarColor(player, Color.HSVToRGB(h, s + 0.1f, v + 0.1f));
+                    orig = this.HighlightCardBar(player.teamID);
                 }
                 foreach (CardInfo card in this.cardsToShow[player].Where(card => player.data.currentCards.Select(card => card.name).Contains(card.name)))
                 {
@@ -297,10 +326,7 @@ namespace ModdingUtils.Utils
                 }
                 if (this.cardsToShow[player].Count > 0)
                 {
-                    this.PlayersCardBar(player).gameObject.transform.localScale = Vector3.one * 1f;
-                    this.PlayersCardBar(player).gameObject.transform.localPosition -= CardBarUtils.localShift;
-                    this.ResetPlayersLineColor(player);
-                    this.ChangePlayersBarColor(player, orig);
+                    this.UnhighlightCardBar(player.teamID, orig);
                 }
             }
             this.Reset();
@@ -310,13 +336,7 @@ namespace ModdingUtils.Utils
         {
             float displayDuration = duration ?? CardBarUtils.displayDuration;
 
-            Color orig = this.GetPlayersBarColor(teamID);
-
-            this.PlayersCardBar(teamID).gameObject.transform.localScale = Vector3.one * Utils.CardBarUtils.barlocalScaleMult;
-            this.PlayersCardBar(teamID).gameObject.transform.localPosition += CardBarUtils.localShift;
-            this.ChangePlayersLineColor(teamID, Color.white);
-            Color.RGBToHSV(this.GetPlayersBarColor(teamID), out float h, out float s, out float v);
-            this.ChangePlayersBarColor(teamID, Color.HSVToRGB(h, s + 0.1f, v + 0.1f));
+            Color orig = this.HighlightCardBar(teamID);
 
 
             this.ShowCard(teamID, cardID);
@@ -324,10 +344,7 @@ namespace ModdingUtils.Utils
             this.HideCard(teamID);
 
 
-            this.PlayersCardBar(teamID).gameObject.transform.localScale = Vector3.one * 1f;
-            this.PlayersCardBar(teamID).gameObject.transform.localPosition -= CardBarUtils.localShift;
-            this.ResetPlayersLineColor(teamID);
-            this.ChangePlayersBarColor(teamID, orig);
+            this.UnhighlightCardBar(teamID, orig);
 
 
             yield break;
@@ -397,13 +414,7 @@ namespace ModdingUtils.Utils
         {
             float displayDuration = duration ?? CardBarUtils.displayDuration;
 
-            Color orig = this.GetPlayersBarColor(teamID);
-
-            this.PlayersCardBar(teamID).gameObject.transform.localScale = Vector3.one * Utils.CardBarUtils.barlocalScaleMult;
-            this.PlayersCardBar(teamID).gameObject.transform.localPosition += CardBarUtils.localShift;
-            this.ChangePlayersLineColor(teamID, Color.white);
-            Color.RGBToHSV(this.GetPlayersBarColor(teamID), out float h, out float s, out float v);
-            this.ChangePlayersBarColor(teamID, Color.HSVToRGB(h, s + 0.1f, v + 0.1f));
+            Color orig = this.HighlightCardBar(teamID);
 
             foreach (int cardID in cardIDs)
             {
@@ -412,10 +423,7 @@ namespace ModdingUtils.Utils
                 this.HideCard(teamID);
             }
 
-            this.PlayersCardBar(teamID).gameObject.transform.localScale = Vector3.one * 1f;
-            this.PlayersCardBar(teamID).gameObject.transform.localPosition -= CardBarUtils.localShift;
-            this.ResetPlayersLineColor(teamID);
-            this.ChangePlayersBarColor(teamID, orig);
+            this.UnhighlightCardBar(teamID, orig);
 
 
             yield break;
