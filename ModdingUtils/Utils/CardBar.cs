@@ -88,6 +88,11 @@ namespace ModdingUtils.Utils
         }
         public void ShowCard(int teamID, string cardName)
         {
+            if (!Cards.instance.GetCardWithID(Cards.instance.GetCardID(cardName)).GetAdditionalData().isVisible)
+            {
+                return;
+            }
+
             if (PhotonNetwork.OfflineMode || PhotonNetwork.IsMasterClient)
             {
                 NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_ShowCard), new object[] { teamID, cardName });

@@ -829,6 +829,11 @@ namespace ModdingUtils.Utils
 
         public static void SilentAddToCardBar(int teamID, CardInfo card, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f)
         {
+            if (!card.GetAdditionalData().isVisible)
+            {
+                return;
+            }
+
             CardBar[] cardBars = (CardBar[])Traverse.Create(CardBarHandler.instance).Field("cardBars").GetValue();
 
             Traverse.Create(cardBars[teamID]).Field("ci").SetValue(card);
