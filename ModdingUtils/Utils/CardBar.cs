@@ -187,6 +187,24 @@ namespace ModdingUtils.Utils
             return children.ToArray();
         }
 
+        public GameObject[] GetActiveCardBarSquares(int teamID)
+        {
+            List<GameObject> children = new List<GameObject>() { };
+
+            foreach (Transform child in this.PlayersCardBar(teamID).transform)
+            {
+                if (child.gameObject.activeInHierarchy)
+                {
+                    children.Add(child.gameObject);
+                }
+            }
+
+            return children.ToArray();
+        }
+        public GameObject[] GetActiveCardBarSquares(Player player)
+        {
+            return this.GetActiveCardBarSquares(player.teamID);
+        }
         public GameObject[] GetCardBarSquares(Player player)
         {
             return this.GetCardBarSquares(player.teamID);
