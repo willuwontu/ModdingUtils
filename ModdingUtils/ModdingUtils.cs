@@ -10,18 +10,13 @@ using UnboundLib.GameModes;
 using System.Reflection;
 using System.Linq;
 using System.Collections.Generic;
-using CardChoiceSpawnUniqueCardPatch;
+using ModdingUtils.Extensions;
 // requires Assembly-CSharp.dll
 // requires MMHOOK-Assembly-CSharp.dll
 
 namespace ModdingUtils
 {
     [BepInDependency("com.willis.rounds.unbound", BepInDependency.DependencyFlags.HardDependency)] // necessary for most modding stuff here
-    [BepInDependency("pykess.rounds.plugins.playerjumppatch", BepInDependency.DependencyFlags.HardDependency)] // fixes multiple jumps
-    [BepInDependency("pykess.rounds.plugins.legraycasterspatch", BepInDependency.DependencyFlags.HardDependency)] // fixes physics for small players
-    [BepInDependency("pykess.rounds.plugins.cardchoicespawnuniquecardpatch", BepInDependency.DependencyFlags.HardDependency)] // fixes allowMultiple and blacklistedCategories
-    [BepInDependency("pykess.rounds.plugins.gununblockablepatch", BepInDependency.DependencyFlags.HardDependency)] // fixes gun.unblockable
-    [BepInDependency("pykess.rounds.plugins.temporarystatspatch", BepInDependency.DependencyFlags.HardDependency)] // fixes Taste Of Blood, Pristine Perserverence, and Chase when combined with cards from PCE
     [BepInPlugin(ModId, ModName, "0.0.0.6")]
     [BepInProcess("Rounds.exe")]
     public class ModdingUtils : BaseUnityPlugin
@@ -36,6 +31,9 @@ namespace ModdingUtils
             Unbound.RegisterCredits(ModName, new string[] { "Pykess" }, new string[] { "github", "Buy me a coffee" }, new string[] { "https://github.com/Rounds-Modding/ModdingUtils", "https://www.buymeacoffee.com/Pykess" });
 
             GameModeManager.AddHook(GameModeHooks.HookPickEnd, (gm) => EndPickPhaseShow());
+
+            // reset player blacklisted categories on game start
+            GameModeManager.AddHook(GameModeHooks.HookGameStart, CharacterStatModifiersExtension.Reset);
         }
 
         private IEnumerator EndPickPhaseShow()

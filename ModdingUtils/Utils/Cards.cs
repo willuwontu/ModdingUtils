@@ -156,25 +156,126 @@ namespace ModdingUtils.Utils
 
         public CardInfo[] RemoveCardsFromPlayer(Player player, int[] indeces)
         {
-            List<CardInfo> removed = new List<CardInfo>() { };
-
-            foreach (int idx in indeces)
+            // copy player's currentCards list
+            List<CardInfo> originalCards = new List<CardInfo>() { };
+            foreach (CardInfo origCard in player.data.currentCards)
             {
-                removed.Add(this.RemoveCardFromPlayer(player, idx));
+                originalCards.Add(origCard);
             }
 
-            return removed.ToArray();
+            List<CardInfo> newCards = new List<CardInfo>() { };
+
+            for (int i = 0; i < originalCards.Count; i++)
+            {
+                if (!indeces.Contains(i)) { newCards.Add(originalCards[i]); }
+            }
+
+            // now we remove all of the cards from the player
+            this.RemoveAllCardsFromPlayer(player);
+            Unbound.Instance.ExecuteAfterSeconds(0.1f, () =>
+            {
+                Utils.CardBarUtils.instance.ClearCardBar(player);
+                // then add back only the ones we didn't remove, marking them as reassignments
+                this.AddCardsToPlayer(player, newCards.ToArray(), true);
+            });
+
+            // run all callbacks
+            foreach (Action<Player, CardInfo, int> callback in this.removalCallbacks)
+            {
+                foreach (int idx in indeces)
+                {
+                    try
+                    {
+                        callback(player, originalCards[idx], idx);
+                    }
+                    catch
+                    { }
+                }
+            }
+
+            // return the cards that were removed
+            return originalCards.Except(newCards).ToArray();
         }
         public int RemoveCardsFromPlayer(Player player, CardInfo[] cards, SelectionType selectType = SelectionType.All)
         {
-            int removed = 0;
+            // copy player's currentCards list
+            List<CardInfo> originalCards = new List<CardInfo>() { };
+            foreach (CardInfo origCard in player.data.currentCards)
+            {
+                originalCards.Add(origCard);
+            }
+
+            List<int> indecesToRemove = new List<int>() { };
 
             foreach (CardInfo card in cards)
             {
-                removed += this.RemoveCardFromPlayer(player, card, selectType);
+                // get list of all indeces that the card appears
+                List<int> indeces = Enumerable.Range(0, player.data.currentCards.Count).Where(idx => player.data.currentCards[idx].name == card.name).ToList();
+
+                int start = 0;
+                int end = indeces.Count;
+
+                switch (selectType)
+                {
+                    case SelectionType.All:
+                        start = 0;
+                        end = indeces.Count;
+                        break;
+                    case SelectionType.Newest:
+                        start = indeces.Count - 1;
+                        end = start + 1;
+                        break;
+                    case SelectionType.Oldest:
+                        start = 0;
+                        end = start + 1;
+                        break;
+                    case SelectionType.Random:
+                        start = rng.Next(0, indeces.Count);
+                        end = start + 1;
+                        break;
+                }
+
+                for (int i = start; i < end; i++)
+                {
+                    indecesToRemove.Add(indeces[i]);
+                }
             }
 
-            return removed;
+            List<CardInfo> newCards = new List<CardInfo>() { };
+
+            for (int i = 0; i < originalCards.Count; i++)
+            {
+                if (!indecesToRemove.Contains(i))
+                {
+                    newCards.Add(originalCards[i]);
+                }
+            }
+
+            // now we remove all of the cards from the player
+            this.RemoveAllCardsFromPlayer(player, false);
+            Unbound.Instance.ExecuteAfterSeconds(0.1f, () =>
+            {
+                Utils.CardBarUtils.instance.ClearCardBar(player);
+                // then add back only the ones we didn't remove
+                this.AddCardsToPlayer(player, newCards.ToArray(), true);
+            });
+
+            // run all callbacks
+            foreach (Action<Player, CardInfo, int> callback in this.removalCallbacks)
+            {
+                foreach (int indx in indecesToRemove)
+                {
+                    try
+                    {
+                        callback(player, originalCards[indx], indx);
+                    }
+                    catch
+                    { }
+                }
+            }
+
+            // return the number of cards removed
+            return indecesToRemove.Count;
         }
 
         public CardInfo RemoveCardFromPlayer(Player player, int idx)
@@ -692,6 +793,10 @@ namespace ModdingUtils.Utils
                     blacklisted = true;
                 }
             }
+            if (card.categories.Intersect(player.data.stats.GetAdditionalData().blacklistedCategories).Any())
+            {
+                blacklisted = true;
+            }
 
             return !blacklisted && (card.allowMultiple || !player.data.currentCards.Where(cardinfo => cardinfo.name == card.name).Any());
 
@@ -826,13 +931,38 @@ namespace ModdingUtils.Utils
                 return null;
             }
         }
+        public CardInfo[] GetAllCardsWithCondition(CardChoice cardChoice, Player player, Func<CardInfo, Player, bool> condition)
+        {
+            List<CardInfo> validCards = new List<CardInfo>() { };
+
+            foreach (CardInfo card in cardChoice.cards)
+            {
+                if (condition(card, player))
+                {
+                    validCards.Add(card);
+                }
+            }
+
+            return validCards.ToArray();
+        }
+
+        public CardInfo[] GetAllCardsWithCondition(CardInfo[] cards, Player player, Func<CardInfo, Player, bool> condition)
+        {
+            List<CardInfo> validCards = new List<CardInfo>() { };
+
+            foreach (CardInfo card in cards)
+            {
+                if (condition(card, player))
+                {
+                    validCards.Add(card);
+                }
+            }
+
+            return validCards.ToArray();
+        }
 
         public static void SilentAddToCardBar(int teamID, CardInfo card, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f)
         {
-            if (!card.GetAdditionalData().isVisible)
-            {
-                return;
-            }
 
             CardBar[] cardBars = (CardBar[])Traverse.Create(CardBarHandler.instance).Field("cardBars").GetValue();
 

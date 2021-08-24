@@ -11,12 +11,10 @@ namespace ModdingUtils.Extensions
     public class CardInfoAdditionalData
     {
         public bool canBeReassigned;
-        public bool isVisible;
 
         public CardInfoAdditionalData()
         {
             canBeReassigned = true;
-            isVisible = true;
         }
     }
     public static class CardInfoExtension

@@ -88,11 +88,6 @@ namespace ModdingUtils.Utils
         }
         public void ShowCard(int teamID, string cardName)
         {
-            if (!Cards.instance.GetCardWithID(Cards.instance.GetCardID(cardName)).GetAdditionalData().isVisible)
-            {
-                return;
-            }
-
             if (PhotonNetwork.OfflineMode || PhotonNetwork.IsMasterClient)
             {
                 NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_ShowCard), new object[] { teamID, cardName });
@@ -187,24 +182,6 @@ namespace ModdingUtils.Utils
             return children.ToArray();
         }
 
-        public GameObject[] GetActiveCardBarSquares(int teamID)
-        {
-            List<GameObject> children = new List<GameObject>() { };
-
-            foreach (Transform child in this.PlayersCardBar(teamID).transform)
-            {
-                if (child.gameObject.activeInHierarchy)
-                {
-                    children.Add(child.gameObject);
-                }
-            }
-
-            return children.ToArray();
-        }
-        public GameObject[] GetActiveCardBarSquares(Player player)
-        {
-            return this.GetActiveCardBarSquares(player.teamID);
-        }
         public GameObject[] GetCardBarSquares(Player player)
         {
             return this.GetCardBarSquares(player.teamID);
