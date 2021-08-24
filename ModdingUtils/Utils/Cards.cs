@@ -909,7 +909,7 @@ namespace ModdingUtils.Utils
         {
             try
             {
-                return this.allCards.Where(card => card.name == cardName).Select(card => this.GetCardID(card)).First();
+                return this.allCards.Where(card => card.cardName == cardName).Select(card => this.GetCardID(card)).First();
             }
             catch
             {
