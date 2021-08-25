@@ -37,6 +37,10 @@ namespace ModdingUtils.Extensions
         }
         public static void DestroyAllAppliedEffects(GameObject gameObject)
         {
+            GravityEffect[] gravityEffects = gameObject.GetComponents<GravityEffect>();
+            foreach (GravityEffect gravityEffect in gravityEffects) { if (gravityEffect != null) { gravityEffect.Destroy(); } }
+            InConeEffect[] inConeEffects = gameObject.GetComponents<InConeEffect>();
+            foreach (InConeEffect inConeEffect in inConeEffects) { if (inConeEffect != null) { inConeEffect.Destroy(); } }
             ColorFlash[] colorFlashs = gameObject.GetComponents<ColorFlash>();
             foreach (ColorFlash colorFlash in colorFlashs) { if (colorFlash != null) { colorFlash.Destroy(); } }
             ColorEffect[] colorEffects = gameObject.GetComponents<ColorEffect>();
