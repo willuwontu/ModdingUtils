@@ -21,32 +21,16 @@ namespace ModdingUtils.Utils
         // singleton design, so that the RNG isn't reset each call
         public static readonly Cards instance = new Cards();
         private static readonly System.Random rng = new System.Random();
-        private List<CardInfo> hiddenCards = new List<CardInfo>() { };
-        private List<Action<Player, CardInfo, int>> removalCallbacks = new List<Action<Player, CardInfo, int>>(){};
-        private List<CardInfo> allCards
-        {
-            get
-            {
-                return ((ObservableCollection<CardInfo>)typeof(CardManager).GetField("activeCards", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null)).ToList().Concat((List<CardInfo>)typeof(CardManager).GetField("inactiveCards", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null)).Concat(this.hiddenCards).ToList();
-            }
-            set { }
-        }
+        private List<CardInfo> hiddenCards = new List<CardInfo>();
+        private List<Action<Player, CardInfo, int>> removalCallbacks = new List<Action<Player, CardInfo, int>>();
+        private List<CardInfo> allCards => ((ObservableCollection<CardInfo>)typeof(CardManager).GetField("activeCards", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null)).ToList().Concat((List<CardInfo>)typeof(CardManager).GetField("inactiveCards", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null)).Concat(hiddenCards).ToList();
+
         private List<CardInfo> ACTIVEANDHIDDENCARDS
         {
-            get
-            {
-                return this.activeCards.ToList().Concat(this.hiddenCards).ToList();
-            }
+            get => activeCards.ToList().Concat(hiddenCards).ToList();
             set { }
         }
-        private CardInfo[] activeCards
-        {
-            get
-            {
-                return global::CardChoice.instance.cards;
-            }
-            set { }
-        }
+        private CardInfo[] activeCards => CardChoice.instance.cards;
 
         private Cards()
         {
@@ -55,7 +39,7 @@ namespace ModdingUtils.Utils
 
         public void AddOnRemoveCallback(Action<Player, CardInfo, int> callback)
         {
-            this.removalCallbacks.Add(callback);
+            removalCallbacks.Add(callback);
         }
 
         public void AddCardToPlayer(Player player, CardInfo card, bool reassign = false, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f)
@@ -85,7 +69,7 @@ namespace ModdingUtils.Utils
                 {
                     player.data.currentCards.Add(card);
                 }
-                Cards.SilentAddToCardBar(player.playerID, cardStats.GetComponent<CardInfo>().sourceCard, twoLetterCode, forceDisplay, forceDisplayDelay);
+                SilentAddToCardBar(player.playerID, cardStats.GetComponent<CardInfo>().sourceCard, twoLetterCode, forceDisplay, forceDisplayDelay);
             }
             else if (PhotonNetwork.IsMasterClient)
             {
@@ -99,7 +83,7 @@ namespace ModdingUtils.Utils
                     array2[j] = array[j].data.view.ControllerActorNr;
                 }
 
-                NetworkingManager.RPC(typeof(Cards), "RPCA_AssignCard", new object[] { Cards.instance.GetCardID(card), array2, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
+                NetworkingManager.RPC(typeof(Cards), "RPCA_AssignCard", new object[] { instance.GetCardID(card), array2, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
 
             }
         }
@@ -111,7 +95,7 @@ namespace ModdingUtils.Utils
                 reassigns[i] = reassign;
             }
 
-            this.AddCardsToPlayer(player, cards, reassigns, twoLetterCodes, forceDisplays, forceDisplayDelays);
+            AddCardsToPlayer(player, cards, reassigns, twoLetterCodes, forceDisplays, forceDisplayDelays);
         }
         public void AddCardsToPlayer(Player player, CardInfo[] cards, bool[] reassigns = null, string[] twoLetterCodes = null, float[] forceDisplays = null, float[] forceDisplayDelays = null)
         {
@@ -150,20 +134,20 @@ namespace ModdingUtils.Utils
 
             for (int i = 0; i < cards.Length; i++)
             {
-                this.AddCardToPlayer(player, cards[i], reassigns[i], twoLetterCodes[i], forceDisplays[i], forceDisplayDelays[i]);
+                AddCardToPlayer(player, cards[i], reassigns[i], twoLetterCodes[i], forceDisplays[i], forceDisplayDelays[i]);
             }
         }
 
         public CardInfo[] RemoveCardsFromPlayer(Player player, int[] indeces)
         {
             // copy player's currentCards list
-            List<CardInfo> originalCards = new List<CardInfo>() { };
+            List<CardInfo> originalCards = new List<CardInfo>();
             foreach (CardInfo origCard in player.data.currentCards)
             {
                 originalCards.Add(origCard);
             }
 
-            List<CardInfo> newCards = new List<CardInfo>() { };
+            List<CardInfo> newCards = new List<CardInfo>();
 
             for (int i = 0; i < originalCards.Count; i++)
             {
@@ -171,16 +155,16 @@ namespace ModdingUtils.Utils
             }
 
             // now we remove all of the cards from the player
-            this.RemoveAllCardsFromPlayer(player);
+            RemoveAllCardsFromPlayer(player);
             Unbound.Instance.ExecuteAfterSeconds(0.1f, () =>
             {
-                Utils.CardBarUtils.instance.ClearCardBar(player);
+                CardBarUtils.instance.ClearCardBar(player);
                 // then add back only the ones we didn't remove, marking them as reassignments
-                this.AddCardsToPlayer(player, newCards.ToArray(), true);
+                AddCardsToPlayer(player, newCards.ToArray(), true);
             });
 
             // run all callbacks
-            foreach (Action<Player, CardInfo, int> callback in this.removalCallbacks)
+            foreach (Action<Player, CardInfo, int> callback in removalCallbacks)
             {
                 foreach (int idx in indeces)
                 {
@@ -199,13 +183,13 @@ namespace ModdingUtils.Utils
         public int RemoveCardsFromPlayer(Player player, CardInfo[] cards, SelectionType selectType = SelectionType.All)
         {
             // copy player's currentCards list
-            List<CardInfo> originalCards = new List<CardInfo>() { };
+            List<CardInfo> originalCards = new List<CardInfo>();
             foreach (CardInfo origCard in player.data.currentCards)
             {
                 originalCards.Add(origCard);
             }
 
-            List<int> indecesToRemove = new List<int>() { };
+            List<int> indecesToRemove = new List<int>();
 
             foreach (CardInfo card in cards)
             {
@@ -241,7 +225,7 @@ namespace ModdingUtils.Utils
                 }
             }
 
-            List<CardInfo> newCards = new List<CardInfo>() { };
+            List<CardInfo> newCards = new List<CardInfo>();
 
             for (int i = 0; i < originalCards.Count; i++)
             {
@@ -252,16 +236,16 @@ namespace ModdingUtils.Utils
             }
 
             // now we remove all of the cards from the player
-            this.RemoveAllCardsFromPlayer(player, false);
+            RemoveAllCardsFromPlayer(player, false);
             Unbound.Instance.ExecuteAfterSeconds(0.1f, () =>
             {
-                Utils.CardBarUtils.instance.ClearCardBar(player);
+                CardBarUtils.instance.ClearCardBar(player);
                 // then add back only the ones we didn't remove
-                this.AddCardsToPlayer(player, newCards.ToArray(), true);
+                AddCardsToPlayer(player, newCards.ToArray(), true);
             });
 
             // run all callbacks
-            foreach (Action<Player, CardInfo, int> callback in this.removalCallbacks)
+            foreach (Action<Player, CardInfo, int> callback in removalCallbacks)
             {
                 foreach (int indx in indecesToRemove)
                 {
@@ -281,13 +265,13 @@ namespace ModdingUtils.Utils
         public CardInfo RemoveCardFromPlayer(Player player, int idx)
         {
             // copy player's currentCards list
-            List<CardInfo> originalCards = new List<CardInfo>() { };
+            List<CardInfo> originalCards = new List<CardInfo>();
             foreach (CardInfo origCard in player.data.currentCards)
             {
                 originalCards.Add(origCard);
             }
 
-            List<CardInfo> newCards = new List<CardInfo>() { };
+            List<CardInfo> newCards = new List<CardInfo>();
 
             for (int i = 0; i < originalCards.Count; i++)
             {
@@ -295,16 +279,16 @@ namespace ModdingUtils.Utils
             }
 
             // now we remove all of the cards from the player
-            this.RemoveAllCardsFromPlayer(player);
+            RemoveAllCardsFromPlayer(player);
             Unbound.Instance.ExecuteAfterSeconds(0.1f, () =>
             {
-                Utils.CardBarUtils.instance.ClearCardBar(player);
+                CardBarUtils.instance.ClearCardBar(player);
                 // then add back only the ones we didn't remove, marking them as reassignments
-                this.AddCardsToPlayer(player, newCards.ToArray(), true);
+                AddCardsToPlayer(player, newCards.ToArray(), true);
             });
 
             // run all callbacks
-            foreach (Action<Player, CardInfo, int> callback in this.removalCallbacks)
+            foreach (Action<Player, CardInfo, int> callback in removalCallbacks)
             {
                 try
                 {
@@ -320,7 +304,7 @@ namespace ModdingUtils.Utils
         public int RemoveCardFromPlayer(Player player, CardInfo card, SelectionType selectType = SelectionType.All)
         {
             // copy player's currentCards list
-            List<CardInfo> originalCards = new List<CardInfo>() { };
+            List<CardInfo> originalCards = new List<CardInfo>();
             foreach (CardInfo origCard in player.data.currentCards)
             {
                 originalCards.Add(origCard);
@@ -344,7 +328,7 @@ namespace ModdingUtils.Utils
                     break;
                 case SelectionType.Oldest:
                     start = 0;
-                    end = start + 1;
+                    end = 1;
                     break;
                 case SelectionType.Random:
                     start = rng.Next(0, indeces.Count);
@@ -352,13 +336,13 @@ namespace ModdingUtils.Utils
                     break;
             }
 
-            List<int> indecesToRemove = new List<int>() { };
+            List<int> indecesToRemove = new List<int>();
             for (int i = start; i < end; i++)
             {
                 indecesToRemove.Add(indeces[i]);
             }
 
-            List<CardInfo> newCards = new List<CardInfo>() { };
+            List<CardInfo> newCards = new List<CardInfo>();
 
             for (int i = 0; i < originalCards.Count; i++)
             {
@@ -369,16 +353,16 @@ namespace ModdingUtils.Utils
             }
 
             // now we remove all of the cards from the player
-            this.RemoveAllCardsFromPlayer(player, false);
+            RemoveAllCardsFromPlayer(player, false);
             Unbound.Instance.ExecuteAfterSeconds(0.1f, () =>
             {
-                Utils.CardBarUtils.instance.ClearCardBar(player);
+                CardBarUtils.instance.ClearCardBar(player);
                 // then add back only the ones we didn't remove
-                this.AddCardsToPlayer(player, newCards.ToArray(), true);
+                AddCardsToPlayer(player, newCards.ToArray(), true);
             });
 
             // run all callbacks
-            foreach (Action<Player, CardInfo, int> callback in this.removalCallbacks)
+            foreach (Action<Player, CardInfo, int> callback in removalCallbacks)
             {
                 foreach(int indx in indecesToRemove)
                 {
@@ -425,7 +409,7 @@ namespace ModdingUtils.Utils
                         BindingFlags.NonPublic, null, player, new object[] { });
                 if (clearBar)
                 {
-                    Utils.CardBarUtils.instance.ClearCardBar(player);
+                    CardBarUtils.instance.ClearCardBar(player);
                 }
             }
             else if (PhotonNetwork.IsMasterClient)
@@ -433,7 +417,7 @@ namespace ModdingUtils.Utils
                 NetworkingManager.RPC(typeof(Cards), "RPCA_FullReset", new object[] { player.data.view.ControllerActorNr });
                 if (clearBar)
                 {
-                    Utils.CardBarUtils.instance.ClearCardBar(player);
+                    CardBarUtils.instance.ClearCardBar(player);
                 }
             }
 
@@ -446,18 +430,18 @@ namespace ModdingUtils.Utils
             {
                 yield break;
             }
-            List<string> twoLetterCodes = new List<string>() { };
-            List<float> forceDisplays = new List<float>() { };
-            List<float> forceDisplayDelays = new List<float>() { };
+            List<string> twoLetterCodes = new List<string>();
+            List<float> forceDisplays = new List<float>();
+            List<float> forceDisplayDelays = new List<float>();
 
             // copy player's currentCards list
-            List<CardInfo> originalCards = new List<CardInfo>() { };
+            List<CardInfo> originalCards = new List<CardInfo>();
             foreach (CardInfo origCard in player.data.currentCards)
             {
                 originalCards.Add(origCard);
             }
 
-            List<CardInfo> newCards = new List<CardInfo>() { };
+            List<CardInfo> newCards = new List<CardInfo>();
 
             for (int i = 0; i < originalCards.Count; i++)
             {
@@ -478,13 +462,13 @@ namespace ModdingUtils.Utils
             }
 
             // now we remove all of the cards from the player
-            this.RemoveAllCardsFromPlayer(player);
+            RemoveAllCardsFromPlayer(player);
 
             yield return new WaitForSecondsRealtime(0.1f);
 
-            Utils.CardBarUtils.instance.ClearCardBar(player);
+            CardBarUtils.instance.ClearCardBar(player);
             // then add back the new card
-            this.AddCardsToPlayer(player, newCards.ToArray(), true, twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray());
+            AddCardsToPlayer(player, newCards.ToArray(), true, twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray());
 
             yield break;
             // return the card that was removed
@@ -501,14 +485,14 @@ namespace ModdingUtils.Utils
                 }
             }
             // copy player's currentCards list
-            List<CardInfo> originalCards = new List<CardInfo>() { };
+            List<CardInfo> originalCards = new List<CardInfo>();
             foreach (CardInfo origCard in player.data.currentCards)
             {
                 originalCards.Add(origCard);
             }
 
-            List<CardInfo> newCardsToAssign = new List<CardInfo>() { };
-            List<string> twoLetterCodesToAssign = new List<string>() { };
+            List<CardInfo> newCardsToAssign = new List<CardInfo>();
+            List<string> twoLetterCodesToAssign = new List<string>();
 
             int j = 0;
             for (int i = 0; i < originalCards.Count; i++)
@@ -533,13 +517,13 @@ namespace ModdingUtils.Utils
             }
 
             // now we remove all of the cards from the player
-            this.RemoveAllCardsFromPlayer(player);
+            RemoveAllCardsFromPlayer(player);
 
             yield return new WaitForSecondsRealtime(0.1f);
 
-            Utils.CardBarUtils.instance.ClearCardBar(player);
+            CardBarUtils.instance.ClearCardBar(player);
             // then add back the new cards
-            this.AddCardsToPlayer(player, newCardsToAssign.ToArray(), true, twoLetterCodesToAssign.ToArray());
+            AddCardsToPlayer(player, newCardsToAssign.ToArray(), true, twoLetterCodesToAssign.ToArray());
 
             yield break;
             // return the card that was removed
@@ -551,12 +535,12 @@ namespace ModdingUtils.Utils
             {
                 yield break;
             }
-            List<string> twoLetterCodes = new List<string>() { };
-            List<float> forceDisplays = new List<float>() { };
-            List<float> forceDisplayDelays = new List<float>() { };
+            List<string> twoLetterCodes = new List<string>();
+            List<float> forceDisplays = new List<float>();
+            List<float> forceDisplayDelays = new List<float>();
 
             // copy player's currentCards list
-            List<CardInfo> originalCards = new List<CardInfo>() { };
+            List<CardInfo> originalCards = new List<CardInfo>();
             foreach (CardInfo origCard in player.data.currentCards)
             {
                 originalCards.Add(origCard);
@@ -580,7 +564,7 @@ namespace ModdingUtils.Utils
                     break;
                 case SelectionType.Oldest:
                     start = 0;
-                    end = start + 1;
+                    end = 1;
                     break;
                 case SelectionType.Random:
                     start = rng.Next(0, indeces.Count);
@@ -588,13 +572,13 @@ namespace ModdingUtils.Utils
                     break;
             }
 
-            List<int> indecesToReplace = new List<int>() { };
+            List<int> indecesToReplace = new List<int>();
             for (int i = start; i < end; i++)
             {
                 indecesToReplace.Add(indeces[i]);
             }
 
-            List<CardInfo> newCards = new List<CardInfo>() { };
+            List<CardInfo> newCards = new List<CardInfo>();
 
             for (int i = 0; i < originalCards.Count; i++)
             {
@@ -615,15 +599,15 @@ namespace ModdingUtils.Utils
             }
 
             // now we remove all of the cards from the player
-            this.RemoveAllCardsFromPlayer(player);
+            RemoveAllCardsFromPlayer(player);
 
             //Unbound.Instance.ExecuteAfterSeconds(0.1f, () =>
             //{
             yield return new WaitForSecondsRealtime(0.1f);
 
-            Utils.CardBarUtils.instance.ClearCardBar(player);
+            CardBarUtils.instance.ClearCardBar(player);
             // then add back the new card
-            this.AddCardsToPlayer(player, newCards.ToArray(), true, twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray());
+            AddCardsToPlayer(player, newCards.ToArray(), true, twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray());
             //});
 
             yield break;
@@ -638,7 +622,7 @@ namespace ModdingUtils.Utils
 
             for (int i = 0; i < actorIDs.Length; i++)
             {
-                CardInfo[] cards = Cards.instance.allCards.ToArray();
+                CardInfo[] cards = instance.allCards.ToArray();
                 ApplyCardStats cardStats = cards[cardID].gameObject.GetComponentInChildren<ApplyCardStats>();
 
                 // call Start to initialize card stat components for base-game cards
@@ -663,7 +647,7 @@ namespace ModdingUtils.Utils
                 {
                     playerToUpgrade.data.currentCards.Add(cards[cardID]);
                 }
-                Cards.SilentAddToCardBar(playerToUpgrade.playerID, cardStats.GetComponent<CardInfo>().sourceCard, twoLetterCode, forceDisplay, forceDisplayDelay);
+                SilentAddToCardBar(playerToUpgrade.playerID, cardStats.GetComponent<CardInfo>().sourceCard, twoLetterCode, forceDisplay, forceDisplayDelay);
             }
         }
         [UnboundRPC]
@@ -722,12 +706,7 @@ namespace ModdingUtils.Utils
             {
                 return false;
             }
-            bool blacklisted = false;
-
-            if (card.categories.Intersect(blacklistedCategories).Any())
-            {
-                blacklisted = true;
-            }
+            bool blacklisted = card.categories.Intersect(blacklistedCategories).Any();
 
             return !blacklisted;
         }
@@ -771,7 +750,7 @@ namespace ModdingUtils.Utils
                 }
             }
 
-            return !conflicts && (card.allowMultiple || !cards.Where(cardinfo => cardinfo.name == card.name).Any());
+            return !conflicts && (card.allowMultiple || cards.All(cardinfo => cardinfo.name != card.name));
         }
 
         public bool PlayerIsAllowedCard(Player player, CardInfo card)
@@ -798,13 +777,13 @@ namespace ModdingUtils.Utils
                 blacklisted = true;
             }
 
-            return !blacklisted && (card.allowMultiple || !player.data.currentCards.Where(cardinfo => cardinfo.name == card.name).Any());
+            return !blacklisted && (card.allowMultiple || player.data.currentCards.All(cardinfo => cardinfo.name != card.name));
 
         }
 
         public int CountPlayerCardsWithCondition(Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition)
         {
-            return this.GetPlayerCardsWithCondition(player, gun, gunAmmo, data, health, gravity, block, characterStats, condition).Length;
+            return GetPlayerCardsWithCondition(player, gun, gunAmmo, data, health, gravity, block, characterStats, condition).Length;
         }
         public CardInfo[] GetPlayerCardsWithCondition(Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition)
         {
@@ -812,10 +791,10 @@ namespace ModdingUtils.Utils
         }
         public int NORARITY_GetRandomCardIDWithCondition(Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition, int maxattempts = 1000)
         {
-            CardInfo card = this.NORARITY_GetRandomCardWithCondition(player, gun, gunAmmo, data, health, gravity, block, characterStats, condition, maxattempts);
+            CardInfo card = NORARITY_GetRandomCardWithCondition(player, gun, gunAmmo, data, health, gravity, block, characterStats, condition, maxattempts);
             if (card != null)
             {
-                return this.GetCardID(card);
+                return GetCardID(card);
             }
             else
             {
@@ -827,7 +806,7 @@ namespace ModdingUtils.Utils
         public CardInfo NORARITY_GetRandomCardWithCondition(Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition, int maxattempts = 1000)
         {
             // get array of all ACTIVE cards
-            CardInfo[] cards = this.activeCards;
+            CardInfo[] cards = activeCards;
 
             // pseudorandom number generator
             int rID = rng.Next(0, cards.Length); // random card index
@@ -835,13 +814,13 @@ namespace ModdingUtils.Utils
             int i = 0;
 
             // draw a random card until it's an uncommon or the maximum number of attempts was reached
-            while (!(condition(cards[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && this.PlayerIsAllowedCard(player, cards[rID])) && i < maxattempts)
+            while (!(condition(cards[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, cards[rID])) && i < maxattempts)
             {
                 rID = rng.Next(0, cards.Length);
                 i++;
             }
 
-            if (!(condition(cards[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && this.PlayerIsAllowedCard(player, cards[rID])))
+            if (!(condition(cards[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, cards[rID])))
             {
                 return null;
             }
@@ -860,13 +839,13 @@ namespace ModdingUtils.Utils
             int i = 0;
 
             // draw a random card until it's an uncommon or the maximum number of attempts was reached
-            while (!(condition(cardsToDrawFrom[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && this.PlayerIsAllowedCard(player, cardsToDrawFrom[rID])) && i < maxattempts)
+            while (!(condition(cardsToDrawFrom[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, cardsToDrawFrom[rID])) && i < maxattempts)
             {
                 rID = rng.Next(0, cardsToDrawFrom.Length);
                 i++;
             }
 
-            if (!(condition(cardsToDrawFrom[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && this.PlayerIsAllowedCard(player, cardsToDrawFrom[rID])))
+            if (!(condition(cardsToDrawFrom[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, cardsToDrawFrom[rID])))
             {
                 return null;
             }
@@ -882,20 +861,20 @@ namespace ModdingUtils.Utils
 
             CardInfo card = ((GameObject)typeof(CardChoice).InvokeMember("GetRanomCard",
                         BindingFlags.Instance | BindingFlags.InvokeMethod |
-                        BindingFlags.NonPublic, null, global::CardChoice.instance, new object[] { })).GetComponent<CardInfo>();
+                        BindingFlags.NonPublic, null, CardChoice.instance, new object[] { })).GetComponent<CardInfo>();
 
             int i = 0;
 
             // draw a random card until it's an uncommon or the maximum number of attempts was reached
-            while (!(condition(card, player, gun, gunAmmo, data, health, gravity, block, characterStats) && this.PlayerIsAllowedCard(player, card)) && i < maxattempts)
+            while (!(condition(card, player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, card)) && i < maxattempts)
             {
                 card = ((GameObject)typeof(CardChoice).InvokeMember("GetRanomCard",
                            BindingFlags.Instance | BindingFlags.InvokeMethod |
-                           BindingFlags.NonPublic, null, global::CardChoice.instance, new object[] { })).GetComponent<CardInfo>();
+                           BindingFlags.NonPublic, null, CardChoice.instance, new object[] { })).GetComponent<CardInfo>();
                 i++;
             }
 
-            if (!(condition(card, player, gun, gunAmmo, data, health, gravity, block, characterStats) && this.PlayerIsAllowedCard(player, card)))
+            if (!(condition(card, player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, card)))
             {
                 return null;
             }
@@ -909,7 +888,7 @@ namespace ModdingUtils.Utils
         {
             try
             {
-                return this.allCards.Where(card => card.cardName == cardName).Select(card => this.GetCardID(card)).First();
+                return allCards.Where(card => card.name == cardName).Select(card => GetCardID(card)).First();
             }
             catch
             {
@@ -918,13 +897,13 @@ namespace ModdingUtils.Utils
         }
         public int GetCardID(CardInfo card)
         {
-            return Array.IndexOf(this.allCards.ToArray(), card);
+            return Array.IndexOf(allCards.ToArray(), card);
         }
         public CardInfo GetCardWithID(int cardID)
         {
             try
             {
-                return this.allCards[cardID];
+                return allCards[cardID];
             }
             catch
             {
@@ -933,7 +912,7 @@ namespace ModdingUtils.Utils
         }
         public CardInfo[] GetAllCardsWithCondition(CardChoice cardChoice, Player player, Func<CardInfo, Player, bool> condition)
         {
-            List<CardInfo> validCards = new List<CardInfo>() { };
+            List<CardInfo> validCards = new List<CardInfo>();
 
             foreach (CardInfo card in cardChoice.cards)
             {
@@ -948,7 +927,7 @@ namespace ModdingUtils.Utils
 
         public CardInfo[] GetAllCardsWithCondition(CardInfo[] cards, Player player, Func<CardInfo, Player, bool> condition)
         {
-            List<CardInfo> validCards = new List<CardInfo>() { };
+            List<CardInfo> validCards = new List<CardInfo>();
 
             foreach (CardInfo card in cards)
             {
@@ -990,7 +969,7 @@ namespace ModdingUtils.Utils
 
         public void AddHiddenCard(CardInfo card)
         {
-            this.hiddenCards.Add(card);
+            hiddenCards.Add(card);
         }
 
     }
