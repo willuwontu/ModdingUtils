@@ -11,6 +11,8 @@ using System.Reflection;
 using System.Linq;
 using System.Collections.Generic;
 using ModdingUtils.Extensions;
+using ModdingUtils.MonoBehaviours;
+
 // requires Assembly-CSharp.dll
 // requires MMHOOK-Assembly-CSharp.dll
 
@@ -28,12 +30,18 @@ namespace ModdingUtils
         private void Start()
         {
             // register credits with unbound
-            Unbound.RegisterCredits(ModName, new string[] { "Pykess" }, new string[] { "github", "Buy me a coffee" }, new string[] { "https://github.com/Rounds-Modding/ModdingUtils", "https://www.buymeacoffee.com/Pykess" });
+            Unbound.RegisterCredits(ModName, new string[] { "Pykess", "Boss sloth" }, new string[] { "github", "Buy me a coffee" }, new string[] { "https://github.com/Rounds-Modding/ModdingUtils", "https://www.buymeacoffee.com/Pykess" });
 
             GameModeManager.AddHook(GameModeHooks.HookPickEnd, (gm) => EndPickPhaseShow());
 
             // reset player blacklisted categories on game start
             GameModeManager.AddHook(GameModeHooks.HookGameStart, CharacterStatModifiersExtension.Reset);
+            
+            GameModeManager.AddHook(GameModeHooks.HookBattleStart, (gm) => ResetEffectsBetweenBattles());
+            GameModeManager.AddHook(GameModeHooks.HookBattleStart, (gm) => ResetTimers()); // I sure hope this doesn't have unintended side effects...
+            
+            GameModeManager.AddHook(GameModeHooks.HookPointEnd, (gm) => ResetEffectsBetweenBattles());
+            GameModeManager.AddHook(GameModeHooks.HookPointEnd, (gm) => ResetTimers());
         }
 
         private IEnumerator EndPickPhaseShow()
@@ -42,6 +50,38 @@ namespace ModdingUtils
             yield return Utils.CardBarUtils.instance.EndPickPhaseShow();
             yield break;
         }
+        
+        private IEnumerator ResetEffectsBetweenBattles()
+        {
+            Player[] players = PlayerManager.instance.players.ToArray();
+            for (int j = 0; j < players.Length; j++)
+            {
+                CustomEffects.ClearAllReversibleEffects(players[j].gameObject);
+                foreach (InConeEffect effect in players[j].GetComponents<InConeEffect>())
+                {
+                    effect.RemoveAllEffects();
+                }
+            }
+            foreach (GameObject gameObject in FindObjectsOfType(typeof(GameObject)) as GameObject[])
+            {
+                if (gameObject.name == "LaserTrail(Clone)")
+                {
+                    Destroy(gameObject);
+                }
+            }
+            yield break;
+        }
+
+        private IEnumerator ResetTimers()
+        {
+            Player[] players = PlayerManager.instance.players.ToArray();
+            for (int j = 0; j < players.Length; j++)
+            {
+                CustomEffects.ResetAllTimers(players[j].gameObject);
+            }
+            yield break;
+        }
+        
         private const string ModId = "pykess.rounds.plugins.moddingutils";
 
         private const string ModName = "Modding Utilities";
