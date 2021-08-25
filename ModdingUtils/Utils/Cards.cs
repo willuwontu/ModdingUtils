@@ -888,7 +888,7 @@ namespace ModdingUtils.Utils
         {
             try
             {
-                return allCards.Where(card => card.name == cardName).Select(card => GetCardID(card)).First();
+                return allCards.Where(card => card.cardName == cardName).Select(card => GetCardID(card)).First();
             }
             catch
             {
