@@ -167,7 +167,7 @@ namespace ModdingUtils.MonoBehaviours
         {
             // derived effects should put any necessary cleanup here
         }
-        internal void ApplyModifiers()
+        public void ApplyModifiers()
         {
             if (modifiersActive) { return; }
             gunStatModifier.ApplyGunStatModifier(gun);
@@ -177,7 +177,7 @@ namespace ModdingUtils.MonoBehaviours
             blockModifier.ApplyBlockModifier(block);
             modifiersActive = true;
         }
-        internal void ClearModifiers(bool clear = true)
+        public void ClearModifiers(bool clear = true)
         {
             if (!modifiersActive) { return; }
             gunStatModifier.RemoveGunStatModifier(gun, clear);
