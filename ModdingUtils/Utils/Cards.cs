@@ -44,6 +44,10 @@ namespace ModdingUtils.Utils
 
         public void AddCardToPlayer(Player player, CardInfo card, bool reassign = false, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f)
         {
+            AddCardToPlayer(player, card, reassign, twoLetterCode, forceDisplay, forceDisplayDelay, true);
+        }
+        public void AddCardToPlayer(Player player, CardInfo card, bool reassign = false, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f, bool addToCardBar = true)
+        {
             // adds the card "card" to the player "player"
             if (card == null) { return; }
             else if (PhotonNetwork.OfflineMode)
@@ -69,7 +73,10 @@ namespace ModdingUtils.Utils
                 {
                     player.data.currentCards.Add(card);
                 }
-                SilentAddToCardBar(player.playerID, cardStats.GetComponent<CardInfo>().sourceCard, twoLetterCode, forceDisplay, forceDisplayDelay);
+                if (addToCardBar)
+                {
+                    SilentAddToCardBar(player.playerID, cardStats.GetComponent<CardInfo>().sourceCard, twoLetterCode, forceDisplay, forceDisplayDelay);
+                }
             }
             else if (PhotonNetwork.IsMasterClient)
             {
@@ -83,11 +90,22 @@ namespace ModdingUtils.Utils
                     array2[j] = array[j].data.view.ControllerActorNr;
                 }
 
-                NetworkingManager.RPC(typeof(Cards), "RPCA_AssignCard", new object[] { instance.GetCardID(card), array2, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
+                if (addToCardBar)
+                {
+                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCard), new object[] { instance.GetCardID(card), array2, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
+                }
+                else
+                {
+                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCardWithoutCardBar), new object[] { instance.GetCardID(card), array2, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
+                }
 
             }
         }
         public void AddCardsToPlayer(Player player, CardInfo[] cards, bool reassign = false, string[] twoLetterCodes = null, float[] forceDisplays = null, float[] forceDisplayDelays = null)
+        {
+            AddCardsToPlayer(player, cards, reassign, twoLetterCodes, forceDisplays, forceDisplayDelays, true);
+        }
+        public void AddCardsToPlayer(Player player, CardInfo[] cards, bool reassign = false, string[] twoLetterCodes = null, float[] forceDisplays = null, float[] forceDisplayDelays = null, bool addToCardBar = true)
         {
             bool[] reassigns = new bool[cards.Length];
             for (int i = 0; i < cards.Length; i++)
@@ -95,9 +113,13 @@ namespace ModdingUtils.Utils
                 reassigns[i] = reassign;
             }
 
-            AddCardsToPlayer(player, cards, reassigns, twoLetterCodes, forceDisplays, forceDisplayDelays);
+            AddCardsToPlayer(player, cards, reassigns, twoLetterCodes, forceDisplays, forceDisplayDelays, addToCardBar);
         }
         public void AddCardsToPlayer(Player player, CardInfo[] cards, bool[] reassigns = null, string[] twoLetterCodes = null, float[] forceDisplays = null, float[] forceDisplayDelays = null)
+        {
+            AddCardsToPlayer(player, cards, reassigns, twoLetterCodes, forceDisplays, forceDisplayDelays, true);
+        }
+        public void AddCardsToPlayer(Player player, CardInfo[] cards, bool[] reassigns = null, string[] twoLetterCodes = null, float[] forceDisplays = null, float[] forceDisplayDelays = null, bool addToCardBar = true)
         {
             if (reassigns == null)
             {
@@ -134,11 +156,14 @@ namespace ModdingUtils.Utils
 
             for (int i = 0; i < cards.Length; i++)
             {
-                AddCardToPlayer(player, cards[i], reassigns[i], twoLetterCodes[i], forceDisplays[i], forceDisplayDelays[i]);
+                AddCardToPlayer(player, cards[i], reassigns[i], twoLetterCodes[i], forceDisplays[i], forceDisplayDelays[i], addToCardBar);
             }
         }
-
         public CardInfo[] RemoveCardsFromPlayer(Player player, int[] indeces)
+        {
+            return RemoveCardsFromPlayer(player, indeces, true);
+        }
+        public CardInfo[] RemoveCardsFromPlayer(Player player, int[] indeces, bool editCardBar = true)
         {
             // copy player's currentCards list
             List<CardInfo> originalCards = new List<CardInfo>();
@@ -158,9 +183,12 @@ namespace ModdingUtils.Utils
             RemoveAllCardsFromPlayer(player);
             Unbound.Instance.ExecuteAfterSeconds(0.1f, () =>
             {
-                CardBarUtils.instance.ClearCardBar(player);
+                if (editCardBar)
+                {
+                    CardBarUtils.instance.ClearCardBar(player);
+                }
                 // then add back only the ones we didn't remove, marking them as reassignments
-                AddCardsToPlayer(player, newCards.ToArray(), true);
+                AddCardsToPlayer(player, newCards.ToArray(), true, addToCardBar: editCardBar);
             });
 
             // run all callbacks
@@ -181,6 +209,10 @@ namespace ModdingUtils.Utils
             return originalCards.Except(newCards).ToArray();
         }
         public int RemoveCardsFromPlayer(Player player, CardInfo[] cards, SelectionType selectType = SelectionType.All)
+        {
+            return RemoveCardsFromPlayer(player, cards, selectType, true);
+        }
+        public int RemoveCardsFromPlayer(Player player, CardInfo[] cards, SelectionType selectType = SelectionType.All, bool editCardBar = true)
         {
             // copy player's currentCards list
             List<CardInfo> originalCards = new List<CardInfo>();
@@ -239,9 +271,12 @@ namespace ModdingUtils.Utils
             RemoveAllCardsFromPlayer(player, false);
             Unbound.Instance.ExecuteAfterSeconds(0.1f, () =>
             {
-                CardBarUtils.instance.ClearCardBar(player);
+                if (editCardBar)
+                {
+                    CardBarUtils.instance.ClearCardBar(player);
+                }
                 // then add back only the ones we didn't remove
-                AddCardsToPlayer(player, newCards.ToArray(), true);
+                AddCardsToPlayer(player, newCards.ToArray(), true, addToCardBar: editCardBar);
             });
 
             // run all callbacks
@@ -261,8 +296,11 @@ namespace ModdingUtils.Utils
             // return the number of cards removed
             return indecesToRemove.Count;
         }
-
         public CardInfo RemoveCardFromPlayer(Player player, int idx)
+        {
+            return RemoveCardFromPlayer(player, idx, true);
+        }
+        public CardInfo RemoveCardFromPlayer(Player player, int idx, bool editCardBar)
         {
             // copy player's currentCards list
             List<CardInfo> originalCards = new List<CardInfo>();
@@ -282,9 +320,12 @@ namespace ModdingUtils.Utils
             RemoveAllCardsFromPlayer(player);
             Unbound.Instance.ExecuteAfterSeconds(0.1f, () =>
             {
-                CardBarUtils.instance.ClearCardBar(player);
+                if (editCardBar)
+                {
+                    CardBarUtils.instance.ClearCardBar(player);
+                }
                 // then add back only the ones we didn't remove, marking them as reassignments
-                AddCardsToPlayer(player, newCards.ToArray(), true);
+                AddCardsToPlayer(player, newCards.ToArray(), true, addToCardBar: editCardBar);
             });
 
             // run all callbacks
@@ -302,6 +343,10 @@ namespace ModdingUtils.Utils
             return originalCards[idx];
         }
         public int RemoveCardFromPlayer(Player player, CardInfo card, SelectionType selectType = SelectionType.All)
+        {
+            return RemoveCardFromPlayer(player, card, selectType, true);
+        }
+        public int RemoveCardFromPlayer(Player player, CardInfo card, SelectionType selectType = SelectionType.All, bool editCardBar = true)
         {
             // copy player's currentCards list
             List<CardInfo> originalCards = new List<CardInfo>();
@@ -356,9 +401,10 @@ namespace ModdingUtils.Utils
             RemoveAllCardsFromPlayer(player, false);
             Unbound.Instance.ExecuteAfterSeconds(0.1f, () =>
             {
-                CardBarUtils.instance.ClearCardBar(player);
+                if (editCardBar)
+                { CardBarUtils.instance.ClearCardBar(player); }
                 // then add back only the ones we didn't remove
-                AddCardsToPlayer(player, newCards.ToArray(), true);
+                AddCardsToPlayer(player, newCards.ToArray(), true, addToCardBar: editCardBar);
             });
 
             // run all callbacks
@@ -426,6 +472,10 @@ namespace ModdingUtils.Utils
         }
         public System.Collections.IEnumerator ReplaceCard(Player player, int idx, CardInfo newCard, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f)
         {
+            yield return ReplaceCard(player, idx, newCard, twoLetterCode, forceDisplay, forceDisplayDelay, true);
+        }
+        public System.Collections.IEnumerator ReplaceCard(Player player, int idx, CardInfo newCard, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f, bool editCardBar = true)
+        {
             if (newCard == null)
             {
                 yield break;
@@ -462,19 +512,26 @@ namespace ModdingUtils.Utils
             }
 
             // now we remove all of the cards from the player
-            RemoveAllCardsFromPlayer(player);
+            RemoveAllCardsFromPlayer(player, editCardBar);
 
             yield return new WaitForSecondsRealtime(0.1f);
 
-            CardBarUtils.instance.ClearCardBar(player);
+            if (editCardBar)
+            {
+                CardBarUtils.instance.ClearCardBar(player);
+            }
             // then add back the new card
-            AddCardsToPlayer(player, newCards.ToArray(), true, twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray());
+            AddCardsToPlayer(player, newCards.ToArray(), true, twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray(), editCardBar);
 
             yield break;
             // return the card that was removed
             //return originalCards[idx];
         }
         public System.Collections.IEnumerator ReplaceCards(Player player, int[] indeces, CardInfo[] newCards, string[] twoLetterCodes = null)
+        {
+            yield return ReplaceCards(player, indeces, newCards, twoLetterCodes, true);
+        }
+        public System.Collections.IEnumerator ReplaceCards(Player player, int[] indeces, CardInfo[] newCards, string[] twoLetterCodes = null, bool editCardBar = true)
         {
             if (twoLetterCodes == null)
             {
@@ -517,19 +574,26 @@ namespace ModdingUtils.Utils
             }
 
             // now we remove all of the cards from the player
-            RemoveAllCardsFromPlayer(player);
+            RemoveAllCardsFromPlayer(player, editCardBar);
 
             yield return new WaitForSecondsRealtime(0.1f);
 
-            CardBarUtils.instance.ClearCardBar(player);
+            if (editCardBar)
+            {
+                CardBarUtils.instance.ClearCardBar(player);
+            }
             // then add back the new cards
-            AddCardsToPlayer(player, newCardsToAssign.ToArray(), true, twoLetterCodesToAssign.ToArray());
+            AddCardsToPlayer(player, newCardsToAssign.ToArray(), true, twoLetterCodesToAssign.ToArray(), addToCardBar: editCardBar);
 
             yield break;
             // return the card that was removed
             //return originalCards[idx];
         }
         public System.Collections.IEnumerator ReplaceCard(Player player, CardInfo cardToReplace, CardInfo newCard, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f, SelectionType selectType = SelectionType.All)
+        {
+            yield return ReplaceCard(player, cardToReplace, newCard, twoLetterCode, forceDisplay, forceDisplayDelay, selectType, true);
+        }
+        public System.Collections.IEnumerator ReplaceCard(Player player, CardInfo cardToReplace, CardInfo newCard, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f, SelectionType selectType = SelectionType.All, bool editCardBar = true)
         {
             if (newCard == null)
             {
@@ -599,15 +663,15 @@ namespace ModdingUtils.Utils
             }
 
             // now we remove all of the cards from the player
-            RemoveAllCardsFromPlayer(player);
+            RemoveAllCardsFromPlayer(player, editCardBar);
 
             //Unbound.Instance.ExecuteAfterSeconds(0.1f, () =>
             //{
             yield return new WaitForSecondsRealtime(0.1f);
 
-            CardBarUtils.instance.ClearCardBar(player);
+            if (editCardBar) { CardBarUtils.instance.ClearCardBar(player); }
             // then add back the new card
-            AddCardsToPlayer(player, newCards.ToArray(), true, twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray());
+            AddCardsToPlayer(player, newCards.ToArray(), true, twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray(), editCardBar);
             //});
 
             yield break;
@@ -648,6 +712,40 @@ namespace ModdingUtils.Utils
                     playerToUpgrade.data.currentCards.Add(cards[cardID]);
                 }
                 SilentAddToCardBar(playerToUpgrade.playerID, cardStats.GetComponent<CardInfo>().sourceCard, twoLetterCode, forceDisplay, forceDisplayDelay);
+            }
+        }
+        [UnboundRPC]
+        public static void RPCA_AssignCardWithoutCardBar(int cardID, int[] actorIDs, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
+        {
+            Player playerToUpgrade;
+
+            for (int i = 0; i < actorIDs.Length; i++)
+            {
+                CardInfo[] cards = instance.allCards.ToArray();
+                ApplyCardStats cardStats = cards[cardID].gameObject.GetComponentInChildren<ApplyCardStats>();
+
+                // call Start to initialize card stat components for base-game cards
+                typeof(ApplyCardStats).InvokeMember("Start",
+                                    BindingFlags.Instance | BindingFlags.InvokeMethod |
+                                    BindingFlags.NonPublic, null, cardStats, new object[] { });
+                cardStats.GetComponent<CardInfo>().sourceCard = cards[cardID];
+
+                playerToUpgrade = (Player)typeof(PlayerManager).InvokeMember("GetPlayerWithActorID",
+                                    BindingFlags.Instance | BindingFlags.InvokeMethod |
+                                    BindingFlags.NonPublic, null, PlayerManager.instance, new object[] { actorIDs[i] });
+
+                Traverse.Create(cardStats).Field("playerToUpgrade").SetValue(playerToUpgrade);
+
+                if (!reassign || cards[cardID].GetAdditionalData().canBeReassigned)
+                {
+                    typeof(ApplyCardStats).InvokeMember("ApplyStats",
+                                        BindingFlags.Instance | BindingFlags.InvokeMethod |
+                                        BindingFlags.NonPublic, null, cardStats, new object[] { });
+                }
+                else
+                {
+                    playerToUpgrade.data.currentCards.Add(cards[cardID]);
+                }
             }
         }
         [UnboundRPC]
