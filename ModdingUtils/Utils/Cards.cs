@@ -82,21 +82,13 @@ namespace ModdingUtils.Utils
             {
                 // assign card with RPC
 
-                Player[] array = new Player[] { player };
-                int[] array2 = new int[array.Length];
-
-                for (int j = 0; j < array.Length; j++)
-                {
-                    array2[j] = array[j].data.view.ControllerActorNr;
-                }
-
                 if (addToCardBar)
                 {
-                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCard), new object[] { instance.GetCardID(card), array2, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
+                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCard), new object[] { card.cardName, player.data.view.ControllerActorNr, player.playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
                 }
                 else
                 {
-                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCardWithoutCardBar), new object[] { instance.GetCardID(card), array2, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
+                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCardWithoutCardBar), new object[] { card.cardName, player.data.view.ControllerActorNr, player.playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
                 }
 
             }
@@ -680,73 +672,67 @@ namespace ModdingUtils.Utils
             //return indecesToReplace.Count;
         }
         [UnboundRPC]
-        public static void RPCA_AssignCard(int cardID, int[] actorIDs, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
+        internal static void RPCA_AssignCard(string cardName, int actorID, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
         {
             Player playerToUpgrade;
 
-            for (int i = 0; i < actorIDs.Length; i++)
-            {
-                CardInfo[] cards = instance.allCards.ToArray();
-                ApplyCardStats cardStats = cards[cardID].gameObject.GetComponentInChildren<ApplyCardStats>();
+            CardInfo card = Cards.instance.GetCardWithName(cardName);
 
-                // call Start to initialize card stat components for base-game cards
-                typeof(ApplyCardStats).InvokeMember("Start",
+            ApplyCardStats cardStats = card.gameObject.GetComponentInChildren<ApplyCardStats>();
+
+            // call Start to initialize card stat components for base-game cards
+            typeof(ApplyCardStats).InvokeMember("Start",
+                                BindingFlags.Instance | BindingFlags.InvokeMethod |
+                                BindingFlags.NonPublic, null, cardStats, new object[] { });
+            cardStats.GetComponent<CardInfo>().sourceCard = card;
+
+            playerToUpgrade = FindPlayer.GetPlayerWithActorAndPlayerIDs(actorID, playerID);
+
+            Traverse.Create(cardStats).Field("playerToUpgrade").SetValue(playerToUpgrade);
+
+            if (!reassign || card.GetAdditionalData().canBeReassigned)
+            {
+                typeof(ApplyCardStats).InvokeMember("ApplyStats",
                                     BindingFlags.Instance | BindingFlags.InvokeMethod |
                                     BindingFlags.NonPublic, null, cardStats, new object[] { });
-                cardStats.GetComponent<CardInfo>().sourceCard = cards[cardID];
-
-                playerToUpgrade = (Player)typeof(PlayerManager).InvokeMember("GetPlayerWithActorID",
-                                    BindingFlags.Instance | BindingFlags.InvokeMethod |
-                                    BindingFlags.NonPublic, null, PlayerManager.instance, new object[] { actorIDs[i] });
-
-                Traverse.Create(cardStats).Field("playerToUpgrade").SetValue(playerToUpgrade);
-
-                if (!reassign || cards[cardID].GetAdditionalData().canBeReassigned)
-                {
-                    typeof(ApplyCardStats).InvokeMember("ApplyStats",
-                                        BindingFlags.Instance | BindingFlags.InvokeMethod |
-                                        BindingFlags.NonPublic, null, cardStats, new object[] { });
-                }
-                else
-                {
-                    playerToUpgrade.data.currentCards.Add(cards[cardID]);
-                }
-                SilentAddToCardBar(playerToUpgrade.playerID, cardStats.GetComponent<CardInfo>().sourceCard, twoLetterCode, forceDisplay, forceDisplayDelay);
             }
+            else
+            {
+                playerToUpgrade.data.currentCards.Add(card);
+            }
+            SilentAddToCardBar(playerToUpgrade.playerID, cardStats.GetComponent<CardInfo>().sourceCard, twoLetterCode, forceDisplay, forceDisplayDelay);
+            
         }
         [UnboundRPC]
-        public static void RPCA_AssignCardWithoutCardBar(int cardID, int[] actorIDs, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
+        internal static void RPCA_AssignCardWithoutCardBar(string cardName, int actorID, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
         {
             Player playerToUpgrade;
 
-            for (int i = 0; i < actorIDs.Length; i++)
-            {
-                CardInfo[] cards = instance.allCards.ToArray();
-                ApplyCardStats cardStats = cards[cardID].gameObject.GetComponentInChildren<ApplyCardStats>();
+            CardInfo card = Cards.instance.GetCardWithName(cardName);
 
-                // call Start to initialize card stat components for base-game cards
-                typeof(ApplyCardStats).InvokeMember("Start",
+            ApplyCardStats cardStats = card.gameObject.GetComponentInChildren<ApplyCardStats>();
+
+            // call Start to initialize card stat components for base-game cards
+            typeof(ApplyCardStats).InvokeMember("Start",
+                                BindingFlags.Instance | BindingFlags.InvokeMethod |
+                                BindingFlags.NonPublic, null, cardStats, new object[] { });
+            cardStats.GetComponent<CardInfo>().sourceCard = card;
+
+            playerToUpgrade = FindPlayer.GetPlayerWithActorAndPlayerIDs(actorID, playerID);
+
+            Traverse.Create(cardStats).Field("playerToUpgrade").SetValue(playerToUpgrade);
+
+            if (!reassign || card.GetAdditionalData().canBeReassigned)
+            {
+                typeof(ApplyCardStats).InvokeMember("ApplyStats",
                                     BindingFlags.Instance | BindingFlags.InvokeMethod |
                                     BindingFlags.NonPublic, null, cardStats, new object[] { });
-                cardStats.GetComponent<CardInfo>().sourceCard = cards[cardID];
-
-                playerToUpgrade = (Player)typeof(PlayerManager).InvokeMember("GetPlayerWithActorID",
-                                    BindingFlags.Instance | BindingFlags.InvokeMethod |
-                                    BindingFlags.NonPublic, null, PlayerManager.instance, new object[] { actorIDs[i] });
-
-                Traverse.Create(cardStats).Field("playerToUpgrade").SetValue(playerToUpgrade);
-
-                if (!reassign || cards[cardID].GetAdditionalData().canBeReassigned)
-                {
-                    typeof(ApplyCardStats).InvokeMember("ApplyStats",
-                                        BindingFlags.Instance | BindingFlags.InvokeMethod |
-                                        BindingFlags.NonPublic, null, cardStats, new object[] { });
-                }
-                else
-                {
-                    playerToUpgrade.data.currentCards.Add(cards[cardID]);
-                }
             }
+            else
+            {
+                playerToUpgrade.data.currentCards.Add(card);
+            }
+            
         }
         [UnboundRPC]
         public static void RPCA_FullReset(int actorID)
@@ -1007,6 +993,10 @@ namespace ModdingUtils.Utils
             {
                 return null;
             }
+        }
+        public CardInfo GetCardWithName(string cardName)
+        {
+            return allCards.Where(card => card.cardName == cardName).First();
         }
         public CardInfo[] GetAllCardsWithCondition(CardChoice cardChoice, Player player, Func<CardInfo, Player, bool> condition)
         {
