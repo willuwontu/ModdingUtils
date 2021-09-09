@@ -2,6 +2,7 @@
 using HarmonyLib;
 using ModdingUtils.MonoBehaviours;
 using UnityEngine;
+using System.Reflection;
 
 namespace ModdingUtils.Extensions
 {
@@ -854,6 +855,9 @@ namespace ModdingUtils.Extensions
 
             // update the characterStatModifiers
             characterStatModifiers.WasUpdated();
+            typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
+                        BindingFlags.Instance | BindingFlags.InvokeMethod |
+                        BindingFlags.NonPublic, null, characterStatModifiers, new object[] { });
         }
         public void ApplyCharacterStatModifiersModifier(CharacterStatModifiers characterStatModifiers)
         {
@@ -919,6 +923,10 @@ namespace ModdingUtils.Extensions
 
             // update the characterStatModifiers
             characterStatModifiers.WasUpdated();
+            typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
+                        BindingFlags.Instance | BindingFlags.InvokeMethod |
+                        BindingFlags.NonPublic, null, characterStatModifiers, new object[] { });
+
         }
         public static void RemoveCharacterStatModifiersModifier(CharacterStatModifiersModifier characterStatModifiersModifier, CharacterStatModifiers characterStatModifiers, bool clear = true)
         {
@@ -986,6 +994,10 @@ namespace ModdingUtils.Extensions
 
             // update the characterStatModifiers
             characterStatModifiers.WasUpdated();
+            typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
+                        BindingFlags.Instance | BindingFlags.InvokeMethod |
+                        BindingFlags.NonPublic, null, characterStatModifiers, new object[] { });
+
         }
         public void RemoveCharacterStatModifiersModifier(CharacterStatModifiers characterStatModifiers, bool clear = true)
         {
@@ -1053,6 +1065,10 @@ namespace ModdingUtils.Extensions
 
             // update the characterStatModifiers
             characterStatModifiers.WasUpdated();
+            typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
+                        BindingFlags.Instance | BindingFlags.InvokeMethod |
+                        BindingFlags.NonPublic, null, characterStatModifiers, new object[] { });
+
 
         }
     }
