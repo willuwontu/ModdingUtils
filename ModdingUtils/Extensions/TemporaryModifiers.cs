@@ -3,6 +3,7 @@ using HarmonyLib;
 using ModdingUtils.MonoBehaviours;
 using UnityEngine;
 using System.Reflection;
+using UnboundLib;
 
 namespace ModdingUtils.Extensions
 {
@@ -145,26 +146,33 @@ namespace ModdingUtils.Extensions
         public int maxAmmo_add = 0;
         public float reloadTimeMultiplier_mult = 1f;
         public float reloadTimeAdd_add = 0f;
+        public int currentAmmo_mult = 1;
+        public int currentAmmo_add = 0;
 
         private int maxAmmo_delta;
         private float reloadTimeMultiplier_delta;
         private float reloadTimeAdd_delta;
+        public int currentAmmo_delta;
 
         public static void ApplyGunAmmoStatModifier(GunAmmoStatModifier gunAmmoStatModifier, GunAmmo gunAmmo)
         {
             gunAmmoStatModifier.maxAmmo_delta = gunAmmo.maxAmmo * gunAmmoStatModifier.maxAmmo_mult + gunAmmoStatModifier.maxAmmo_add - gunAmmo.maxAmmo;
             gunAmmoStatModifier.reloadTimeMultiplier_delta = gunAmmo.reloadTimeMultiplier * gunAmmoStatModifier.reloadTimeMultiplier_mult - gunAmmo.reloadTimeMultiplier;
             gunAmmoStatModifier.reloadTimeAdd_delta = gunAmmoStatModifier.reloadTimeAdd_add;
+            gunAmmoStatModifier.currentAmmo_delta = (int)gunAmmo.GetFieldValue("currentAmmo") * gunAmmoStatModifier.currentAmmo_mult + gunAmmoStatModifier.currentAmmo_add - (int)gunAmmo.GetFieldValue("currentAmmo");
 
             gunAmmo.maxAmmo += gunAmmoStatModifier.maxAmmo_delta;
             gunAmmo.reloadTimeMultiplier += gunAmmoStatModifier.reloadTimeMultiplier_delta;
             gunAmmo.reloadTimeAdd += gunAmmoStatModifier.reloadTimeAdd_delta;
+            gunAmmo.SetFieldValue("currentAmmo", (int)gunAmmo.GetFieldValue("currentAmmo") + gunAmmoStatModifier.currentAmmo_delta);
 
             // if the gun is currently reloading, then set lastMaxAmmo to be the same as MaxAmmo to prevent the bullets from being drawn over the reload ring
             if (((Gun)Traverse.Create(gunAmmo).Field("gun").GetValue()).isReloading)
             {
                 Traverse.Create(gunAmmo).Field("lastMaxAmmo").SetValue(gunAmmo.maxAmmo);
             }
+            // if the current ammo was changed, redraw the bullet icons
+            if (gunAmmoStatModifier.currentAmmo_delta != 0) { GunAmmoStatModifier.ReDrawCurrentBullets(gunAmmo); }
 
         }
         public void ApplyGunAmmoStatModifier(GunAmmo gunAmmo)
@@ -172,22 +180,30 @@ namespace ModdingUtils.Extensions
             maxAmmo_delta = gunAmmo.maxAmmo * maxAmmo_mult + maxAmmo_add - gunAmmo.maxAmmo;
             reloadTimeMultiplier_delta = gunAmmo.reloadTimeMultiplier * reloadTimeMultiplier_mult - gunAmmo.reloadTimeMultiplier;
             reloadTimeAdd_delta = reloadTimeAdd_add;
+            currentAmmo_delta = (int)gunAmmo.GetFieldValue("currentAmmo") * currentAmmo_mult + currentAmmo_add - (int)gunAmmo.GetFieldValue("currentAmmo");
+
 
             gunAmmo.maxAmmo += maxAmmo_delta;
             gunAmmo.reloadTimeMultiplier += reloadTimeMultiplier_delta;
             gunAmmo.reloadTimeAdd += reloadTimeAdd_delta;
+            gunAmmo.SetFieldValue("currentAmmo", (int)gunAmmo.GetFieldValue("currentAmmo") + currentAmmo_delta);
 
             // if the gun is currently reloading, then set lastMaxAmmo to be the same as MaxAmmo to prevent the bullets from being drawn over the reload ring
             if (((Gun)Traverse.Create(gunAmmo).Field("gun").GetValue()).isReloading)
             {
                 Traverse.Create(gunAmmo).Field("lastMaxAmmo").SetValue(gunAmmo.maxAmmo);
             }
+            // if the current ammo was changed, redraw the bullet icons
+            if (currentAmmo_delta != 0) { GunAmmoStatModifier.ReDrawCurrentBullets(gunAmmo); }
         }
         public static void RemoveGunAmmoStatModifier(GunAmmoStatModifier gunAmmoStatModifier, GunAmmo gunAmmo, bool clear = true)
         {
             gunAmmo.maxAmmo -= gunAmmoStatModifier.maxAmmo_delta;
             gunAmmo.reloadTimeMultiplier -= gunAmmoStatModifier.reloadTimeMultiplier_delta;
             gunAmmo.reloadTimeAdd -= gunAmmoStatModifier.reloadTimeAdd_delta;
+            gunAmmo.SetFieldValue("currentAmmo", UnityEngine.Mathf.Clamp((int)gunAmmo.GetFieldValue("currentAmmo") - gunAmmoStatModifier.currentAmmo_delta, 0, int.MaxValue));
+
+            bool flag = gunAmmoStatModifier.currentAmmo_delta != 0;
 
             // reset deltas
 
@@ -196,6 +212,7 @@ namespace ModdingUtils.Extensions
                 gunAmmoStatModifier.maxAmmo_delta = 0;
                 gunAmmoStatModifier.reloadTimeMultiplier_delta = 0f;
                 gunAmmoStatModifier.reloadTimeAdd_delta = 0f;
+                gunAmmoStatModifier.currentAmmo_delta = 0;
             }
 
             // if the gun is currently reloading, then set lastMaxAmmo to be the same as MaxAmmo to prevent the bullets from being drawn over the reload ring
@@ -203,12 +220,17 @@ namespace ModdingUtils.Extensions
             {
                 Traverse.Create(gunAmmo).Field("lastMaxAmmo").SetValue(gunAmmo.maxAmmo);
             }
+            // if the current ammo was changed, redraw the bullet icons
+            if (flag) { GunAmmoStatModifier.ReDrawCurrentBullets(gunAmmo); }
         }
         public void RemoveGunAmmoStatModifier(GunAmmo gunAmmo, bool clear = true)
         {
             gunAmmo.maxAmmo -= maxAmmo_delta;
             gunAmmo.reloadTimeMultiplier -= reloadTimeMultiplier_delta;
             gunAmmo.reloadTimeAdd -= reloadTimeAdd_delta;
+            gunAmmo.SetFieldValue("currentAmmo", UnityEngine.Mathf.Clamp((int)gunAmmo.GetFieldValue("currentAmmo") - currentAmmo_delta, 0, int.MaxValue));
+
+            bool flag = currentAmmo_delta != 0;
 
             // reset deltas
 
@@ -217,6 +239,7 @@ namespace ModdingUtils.Extensions
                 maxAmmo_delta = 0;
                 reloadTimeMultiplier_delta = 0f;
                 reloadTimeAdd_delta = 0f;
+                currentAmmo_delta = 0;
             }
 
             // if the gun is currently reloading, then set lastMaxAmmo to be the same as MaxAmmo to prevent the bullets from being drawn over the reload ring
@@ -224,6 +247,23 @@ namespace ModdingUtils.Extensions
             {
                 Traverse.Create(gunAmmo).Field("lastMaxAmmo").SetValue(gunAmmo.maxAmmo);
             }
+            // if the current ammo was changed, redraw the bullet icons
+            if (flag) { GunAmmoStatModifier.ReDrawCurrentBullets(gunAmmo); }
+        }
+        private static void ReDrawCurrentBullets(GunAmmo gunAmmo)
+        {
+            for (int i = gunAmmo.populate.transform.childCount - 1; i >= 0; i--)
+            {
+                if (gunAmmo.populate.transform.GetChild(i).gameObject.activeSelf)
+                {
+                    Object.Destroy(gunAmmo.populate.transform.GetChild(i).gameObject);
+                }
+            }
+            gunAmmo.populate.times = (int)gunAmmo.GetFieldValue("currentAmmo");
+            gunAmmo.populate.DoPopulate();
+            typeof(GunAmmo).InvokeMember("SetActiveBullets",
+                        BindingFlags.Instance | BindingFlags.InvokeMethod |
+                        BindingFlags.NonPublic, null, gunAmmo, new object[] { false });
         }
     }
 
@@ -853,6 +893,11 @@ namespace ModdingUtils.Extensions
                 characterStatModifiers.objectsAddedToPlayer.Add(instantiatedObject);
             }
 
+            if (characterStatModifiersModifier.respawns_delta != 0)
+            {
+                characterStatModifiers.SetFieldValue("remainingRespawns", (int)characterStatModifiers.GetFieldValue("remainingRespawns") + characterStatModifiersModifier.respawns_delta);
+            }
+
             // update the characterStatModifiers
             characterStatModifiers.WasUpdated();
             typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
@@ -918,6 +963,10 @@ namespace ModdingUtils.Extensions
 
                 objectsAddedToPlayer.Add(instantiatedObject);
                 characterStatModifiers.objectsAddedToPlayer.Add(instantiatedObject);
+            }
+            if (respawns_delta != 0)
+            {
+                characterStatModifiers.SetFieldValue("remainingRespawns", (int)characterStatModifiers.GetFieldValue("remainingRespawns") + respawns_delta);
             }
 
 
