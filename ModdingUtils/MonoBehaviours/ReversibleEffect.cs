@@ -21,6 +21,7 @@ namespace ModdingUtils.MonoBehaviours
 
         public GunStatModifier gunStatModifier = new GunStatModifier();
         public GunAmmoStatModifier gunAmmoStatModifier = new GunAmmoStatModifier();
+        public CharacterDataModifier characterDataModifier = new CharacterDataModifier();
         public CharacterStatModifiersModifier characterStatModifiersModifier = new CharacterStatModifiersModifier();
         public GravityModifier gravityModifier = new GravityModifier();
         public BlockModifier blockModifier = new BlockModifier();
@@ -101,6 +102,7 @@ namespace ModdingUtils.MonoBehaviours
              * base.playerColorModifier
              * base.characterStatModifiersModifier
              * base.blockModifier
+             * base.characterDataModifier
              * 
              * and optionally, if the effect should not be applied until later, base.applyImmediately
              */
@@ -173,6 +175,7 @@ namespace ModdingUtils.MonoBehaviours
             gunStatModifier.ApplyGunStatModifier(gun);
             gunAmmoStatModifier.ApplyGunAmmoStatModifier(gunAmmo);
             characterStatModifiersModifier.ApplyCharacterStatModifiersModifier(characterStatModifiers);
+            characterDataModifier.ApplyCharacterDataModifier(data);
             gravityModifier.ApplyGravityModifier(gravity);
             blockModifier.ApplyBlockModifier(block);
             modifiersActive = true;
@@ -183,6 +186,7 @@ namespace ModdingUtils.MonoBehaviours
             gunStatModifier.RemoveGunStatModifier(gun, clear);
             gunAmmoStatModifier.RemoveGunAmmoStatModifier(gunAmmo, clear);
             characterStatModifiersModifier.RemoveCharacterStatModifiersModifier(characterStatModifiers, clear);
+            characterDataModifier.RemoveCharacterDataModifier(data, clear);
             gravityModifier.RemoveGravityModifier(gravity, clear);
             blockModifier.RemoveBlockModifier(block, clear);
             modifiersActive = false;

@@ -28,6 +28,7 @@ namespace ModdingUtils.MonoBehaviours
          * base.gunAmmoStatModifier
          * base.playerColorModifier
          * base.characterStatModifiersModifier
+         * base.characterDataModifier
          */
         // it will only be called immediately after CounterStatus.Apply is set and should ideally use the value of counterValue to change the modifiers
         // IMPORTANT NOTE: the effects will always be cleared before they are applied, and thus this method cannot use any values previously set to them
@@ -57,11 +58,12 @@ namespace ModdingUtils.MonoBehaviours
         public override void OnStart()
         {
             // modifiers of CounterReversibleEffects should start off as noop
-            gunStatModifier = new GunStatModifier();
-            gunAmmoStatModifier = new GunAmmoStatModifier();
-            characterStatModifiersModifier = new CharacterStatModifiersModifier();
-            gravityModifier = new GravityModifier();
-            blockModifier = new BlockModifier();
+            base.gunStatModifier = new GunStatModifier();
+            base.gunAmmoStatModifier = new GunAmmoStatModifier();
+            base.characterStatModifiersModifier = new CharacterStatModifiersModifier();
+            base.gravityModifier = new GravityModifier();
+            base.blockModifier = new BlockModifier();
+            base.characterDataModifier = new CharacterDataModifier();
         }
 
         public override void OnFixedUpdate()

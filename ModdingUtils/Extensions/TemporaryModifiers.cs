@@ -7,6 +7,98 @@ using UnboundLib;
 
 namespace ModdingUtils.Extensions
 {
+
+    public class CharacterDataModifier
+    {
+        public float health_add = 0f;
+        public float health_mult = 1f;
+        public float maxHealth_add = 0f;
+        public float maxHealth_mult = 1f;
+
+        private float health_delta = 0f;
+        private float maxHealth_delta = 0f;
+        public static void ApplyCharacterDataModifier(CharacterDataModifier characterDataModifier, CharacterData data)
+        {
+            characterDataModifier.health_delta = data.health * characterDataModifier.health_mult + characterDataModifier.health_add - data.health;
+            characterDataModifier.maxHealth_delta = data.maxHealth * characterDataModifier.maxHealth_mult + characterDataModifier.maxHealth_add - data.maxHealth;
+
+            data.health += characterDataModifier.health_delta;
+            data.maxHealth += characterDataModifier.maxHealth_delta;
+
+            // update player stuff
+            if (characterDataModifier.maxHealth_delta != 0f || characterDataModifier.maxHealth_delta != 0f)
+            {
+                typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
+                    BindingFlags.Instance | BindingFlags.InvokeMethod |
+                    BindingFlags.NonPublic, null, data.stats, new object[] { });
+            }
+
+
+        }
+        public void ApplyCharacterDataModifier(CharacterData data)
+        {
+            health_delta = data.health * health_mult + health_add - data.health;
+            maxHealth_delta = data.maxHealth * maxHealth_mult + maxHealth_add - data.maxHealth;
+
+            data.health += health_delta;
+            data.maxHealth += maxHealth_delta;
+
+            // update player stuff
+            if (this.maxHealth_delta != 0f || this.maxHealth_delta != 0f)
+            {
+                typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
+                    BindingFlags.Instance | BindingFlags.InvokeMethod |
+                    BindingFlags.NonPublic, null, data.stats, new object[] { });
+            }
+
+        }
+        public static void RemoveCharacterDataModifier(CharacterDataModifier characterDataModifier, CharacterData data, bool clear = true)
+        {
+
+            data.health -= characterDataModifier.health_delta;
+            data.maxHealth -= characterDataModifier.maxHealth_delta;
+
+            // update player stuff
+            if (characterDataModifier.maxHealth_delta != 0f || characterDataModifier.maxHealth_delta != 0f)
+            {
+                typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
+                    BindingFlags.Instance | BindingFlags.InvokeMethod |
+                    BindingFlags.NonPublic, null, data.stats, new object[] { });
+            }
+
+            // reset deltas
+
+            if (clear)
+            {
+                characterDataModifier.health_delta = 0f;
+                characterDataModifier.maxHealth_delta = 0f;
+            }
+
+        }
+        public void RemoveCharacterDataModifier(CharacterData data, bool clear = true)
+        {
+
+            data.health -= health_delta;
+            data.maxHealth -= maxHealth_delta;
+
+            // update player stuff
+            if (this.maxHealth_delta != 0f || this.maxHealth_delta != 0f)
+            {
+                typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
+                    BindingFlags.Instance | BindingFlags.InvokeMethod |
+                    BindingFlags.NonPublic, null, data.stats, new object[] { });
+            }
+
+            // reset deltas
+
+            if (clear)
+            {
+                health_delta = 0f;
+                maxHealth_delta = 0f;
+            }
+
+        }
+    }
     public class BlockModifier
     {
         public List<GameObject> objectsToSpawn_add = new List<GameObject>();
