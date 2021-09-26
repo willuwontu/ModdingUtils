@@ -19,7 +19,7 @@ using ModdingUtils.MonoBehaviours;
 namespace ModdingUtils
 {
     [BepInDependency("com.willis.rounds.unbound", BepInDependency.DependencyFlags.HardDependency)] // necessary for most modding stuff here
-    [BepInPlugin(ModId, ModName, "0.0.1.7")]
+    [BepInPlugin(ModId, ModName, "0.1.8")]
     [BepInProcess("Rounds.exe")]
     public class ModdingUtils : BaseUnityPlugin
     {
