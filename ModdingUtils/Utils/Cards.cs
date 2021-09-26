@@ -418,6 +418,14 @@ namespace ModdingUtils.Utils
         }
         public CardInfo[] RemoveAllCardsFromPlayer(Player player, bool clearBar = true)
         {
+            Gun gun = player.GetComponent<Holding>().holdable.GetComponent<Gun>();
+            CharacterData characterData = player.GetComponent<CharacterData>();
+            HealthHandler healthHandler = player.GetComponent<HealthHandler>();
+            Gravity gravity = player.GetComponent<Gravity>();
+            Block block = player.GetComponent<Block>();
+            GunAmmo gunAmmo = gun.GetComponentInChildren<GunAmmo>();
+            CharacterStatModifiers characterStatModifiers = player.GetComponent<CharacterStatModifiers>();
+
             // copy currentCards
             List<CardInfo> cards = new List<CardInfo>();
             foreach (CardInfo origCard in player.data.currentCards)
@@ -432,7 +440,7 @@ namespace ModdingUtils.Utils
                 {
                     try
                     {
-                        card.GetComponent<CustomCard>().OnRemoveCard();
+                        card.GetComponent<CustomCard>().OnRemoveCard(player, gun, gunAmmo, characterData, healthHandler, gravity, block, characterStatModifiers);
                     }
                     catch (NotImplementedException)
                     { }

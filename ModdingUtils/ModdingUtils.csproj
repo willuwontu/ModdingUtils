@@ -35,6 +35,9 @@
     <Reference Include="UnboundLib">
       <HintPath>..\..\..\Visual Studio 2019\Projects\Rounds\Dependencies\UnboundLib.dll</HintPath>
     </Reference>
+    <Reference Include="UnboundLib">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\ROUNDS\BepInEx\plugins\UnboundLib\UnboundLib.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>..\..\..\Visual Studio 2019\Projects\Rounds\Dependencies\Unity.TextMeshPro.dll</HintPath>
     </Reference>
