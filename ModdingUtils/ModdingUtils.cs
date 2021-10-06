@@ -12,6 +12,8 @@ using System.Linq;
 using System.Collections.Generic;
 using ModdingUtils.Extensions;
 using ModdingUtils.MonoBehaviours;
+using ModdingUtils.AIMinion;
+using On;
 
 // requires Assembly-CSharp.dll
 // requires MMHOOK-Assembly-CSharp.dll
@@ -42,6 +44,17 @@ namespace ModdingUtils
             
             GameModeManager.AddHook(GameModeHooks.HookPointEnd, (gm) => ResetEffectsBetweenBattles());
             GameModeManager.AddHook(GameModeHooks.HookPointEnd, (gm) => ResetTimers());
+
+            // AIMinion stuff
+            GameModeManager.AddHook(GameModeHooks.HookInitEnd, AIMinionHandler.InitPlayerAssigner);
+            GameModeManager.AddHook(GameModeHooks.HookBattleStart, AIMinionHandler.CreateAllAIs);
+            GameModeManager.AddHook(GameModeHooks.HookPointEnd, AIMinionHandler.RemoveAllAIs);
+            GameModeManager.AddHook(GameModeHooks.HookPickStart, AIMinionHandler.RemoveAllAIs);
+            GameModeManager.AddHook(GameModeHooks.HookBattleStart, TimeSinceBattleStart.BattleStart);
+            GameModeManager.AddHook(GameModeHooks.HookBattleStart, AIMinionHandler.StartStalemateHandler);
+            GameModeManager.AddHook(GameModeHooks.HookPointStart, TimeSinceBattleStart.FreezeTimer);
+            GameModeManager.AddHook(GameModeHooks.HookGameStart, (gm) => AIMinionHandler.SetPlayersCanJoin(false));
+            GameModeManager.AddHook(GameModeHooks.HookInitStart, (gm) => AIMinionHandler.SetPlayersCanJoin(true));
         }
 
         private IEnumerator EndPickPhaseShow()
@@ -60,13 +73,6 @@ namespace ModdingUtils
                 foreach (InConeEffect effect in players[j].GetComponents<InConeEffect>())
                 {
                     effect.RemoveAllEffects();
-                }
-            }
-            foreach (GameObject gameObject in FindObjectsOfType(typeof(GameObject)) as GameObject[])
-            {
-                if (gameObject.name == "LaserTrail(Clone)")
-                {
-                    Destroy(gameObject);
                 }
             }
             yield break;

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using HarmonyLib;
 
-namespace ModdingUtils.Extensions
+namespace ModdingUtils.Utils
 {
     public static class PlayerStatus
     {
@@ -40,6 +40,12 @@ namespace ModdingUtils.Extensions
                 }
             }
             return res;
+        }
+        public static Player GetRandomEnemyPlayer(Player player)
+        {
+            List<Player> enemies = GetEnemyPlayers(player);
+            if (GetNumberOfEnemyPlayers(player) == 0) { return null; }
+            return enemies[UnityEngine.Random.Range(0, GetNumberOfEnemyPlayers(player))];
         }
         public static List<Player> GetOtherPlayers(Player player)
         {

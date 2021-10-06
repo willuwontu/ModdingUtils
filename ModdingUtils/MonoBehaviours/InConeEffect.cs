@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ModdingUtils.Extensions;
 using UnityEngine;
+using ModdingUtils.Utils;
 
 namespace ModdingUtils.MonoBehaviours
 {

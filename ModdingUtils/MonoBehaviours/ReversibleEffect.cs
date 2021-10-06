@@ -1,5 +1,6 @@
 ﻿using ModdingUtils.Extensions;
 using UnityEngine;
+using ModdingUtils.Utils;
 
 // From PCE
 namespace ModdingUtils.MonoBehaviours

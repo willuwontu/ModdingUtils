@@ -18,6 +18,32 @@ namespace ModdingUtils.Utils
 {
     public sealed class Cards
     {
+        public static List<CardInfo> active
+        {
+            get
+            {
+                return ((ObservableCollection<CardInfo>)typeof(CardManager).GetField("activeCards", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null)).ToList();
+
+            }
+            set { }
+        }
+        public static List<CardInfo> inactive
+        {
+            get
+            {
+                return (List<CardInfo>)typeof(CardManager).GetField("inactiveCards", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
+            }
+            set { }
+        }
+        public static List<CardInfo> all
+        {
+            get
+            {
+                return active.Concat(inactive).ToList();
+            }
+            set { }
+        }
+
         // singleton design, so that the RNG isn't reset each call
         public static readonly Cards instance = new Cards();
         private static readonly System.Random rng = new System.Random();
