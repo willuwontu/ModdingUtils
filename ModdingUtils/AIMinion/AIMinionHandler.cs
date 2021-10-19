@@ -23,7 +23,9 @@ namespace ModdingUtils.AIMinion
 {
     public static class AIMinionHandler
     {
-        internal const float stalemateCountdown = 10f;
+        internal const float stalemateDamage = 100f;
+        internal const float stalemateSecondsToTakeDamageOver = 3f;
+        internal const float stalemateCountdown = 5f;
         internal static bool playersCanJoin = true;
         internal const float actionDelay = 2.5f;
         internal static Coroutine EndStalemateRoutine = null;
@@ -87,7 +89,6 @@ namespace ModdingUtils.AIMinion
             PlayerManager.instance.players = new List<Player>() { };
             for (int i = 0; i < totPlayers; i++)
             {
-                UnityEngine.Debug.Log(i);
                 if (!Extensions.CharacterDataExtension.GetAdditionalData(GetPlayerOrAIWithID(playersAndAI.ToArray(),i).data).isEnabled)
                 { continue; }
                 PlayerManager.instance.players.Add(GetPlayerOrAIWithID(playersAndAI.ToArray(), i));
@@ -196,24 +197,25 @@ namespace ModdingUtils.AIMinion
             // wait until there are only AIs alive, wait a few seconds, then kill them
             while (PlayerManager.instance.players.Where(player => !Extensions.CharacterDataExtension.GetAdditionalData(player.data).isAIMinion && PlayerStatus.PlayerAliveAndSimulated(player)).Any())
             {
-                yield return new WaitForSecondsRealtime(0.1f);
+                yield return new WaitForSecondsRealtime(0.5f);
             }
+            yield return new WaitForSecondsRealtime(stalemateCountdown);
             while (PlayerManager.instance.players.Where(player => PlayerStatus.PlayerAliveAndSimulated(player)).Any())
             {
                 if (PhotonNetwork.IsMasterClient)
                 {
-                    NetworkingManager.RPC(typeof(AIMinionHandler), nameof(EndStalemate), new object[] { stalemateCountdown });
+                    NetworkingManager.RPC(typeof(AIMinionHandler), nameof(EndStalemate), new object[] { stalemateSecondsToTakeDamageOver, stalemateDamage });
                 }
-                yield return new WaitForSecondsRealtime(stalemateCountdown);
+                yield return new WaitForSecondsRealtime(stalemateSecondsToTakeDamageOver);
             }
             yield break;
         }
         [UnboundRPC]
-        private static void EndStalemate(float countdown)
+        private static void EndStalemate(float secondsToTakeDamageOver, float damage)
         {
             foreach (Player minion in PlayerManager.instance.players.Where(player => Extensions.CharacterDataExtension.GetAdditionalData(player.data).isAIMinion && PlayerStatus.PlayerAliveAndSimulated(player)).OrderBy(i => UnityEngine.Random.value))
             {
-                minion.data.healthHandler.TakeDamageOverTime(minion.data.maxHealth * Vector2.up, minion.transform.position, countdown, 0.25f, Color.white, null, null, true);
+                minion.data.healthHandler.TakeDamageOverTime(damage* Vector2.up, minion.transform.position, secondsToTakeDamageOver, 0.5f, Color.white, null, null, true);
             }
         }
 
