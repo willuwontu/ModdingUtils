@@ -25,13 +25,10 @@ namespace ModdingUtils.Patches
         {
 			__state = new bool();
 
-			if (__instance.ownPlayer != null && __instance.ownPlayer.GetComponent<Holding>().holdable.GetComponent<Gun>() != null)
+			if (Time.time < __instance.GetAdditionalData().startTime + __instance.GetAdditionalData().inactiveDelay || ((__instance.ownPlayer != null && __instance.ownPlayer.GetComponent<Holding>().holdable.GetComponent<Gun>() != null) && (Time.time < __instance.GetAdditionalData().startTime + __instance.ownPlayer.GetComponent<Holding>().holdable.GetComponent<Gun>().GetAdditionalData().inactiveDelay)))
             {
-				if (Time.time < __instance.GetAdditionalData().startTime + __instance.GetAdditionalData().inactiveDelay || Time.time < __instance.GetAdditionalData().startTime + __instance.ownPlayer.GetComponent<Holding>().holdable.GetComponent<Gun>().GetAdditionalData().inactiveDelay)
-				{
-					__state = false;
-					return false; // don't run DoHit if the initial delay is not over
-				}
+				__state = false;
+				return false; // don't run DoHit if the initial delay is not over
 
 			}
 			__state = true;

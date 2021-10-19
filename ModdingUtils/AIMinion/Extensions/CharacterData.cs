@@ -11,14 +11,18 @@ namespace ModdingUtils.AIMinion.Extensions
     public class CharacterDataAdditionalData
     {
         public List<Player> minions;
+        public List<Player> oldMinions;
         public bool isAIMinion;
+        public bool isEnabled;
         public Player spawner;
         public AIMinionHandler.SpawnLocation spawnLocation;
 
         public CharacterDataAdditionalData()
         {
             minions = new List<Player>() { };
+            oldMinions = new List<Player>() { };
             isAIMinion = false;
+            isEnabled = true;
             spawner = null;
             spawnLocation = AIMinionHandler.SpawnLocation.Owner_Random;
         }
@@ -46,14 +50,12 @@ namespace ModdingUtils.AIMinion.Extensions
     [HarmonyPatch(typeof(Player), "FullReset")]
     class PlayerPatchFullReset_CharacterDataExtension
     {
-        private static void Postfix(Player __instance)
+        private static void Prefix(Player __instance)
         {
-            for (int i = 0; i < __instance.data.GetAdditionalData().minions.Count; i++)
-            {
-                UnityEngine.GameObject.Destroy(__instance.data.GetAdditionalData().minions[i]);
-            }
+            __instance.data.GetAdditionalData().oldMinions = new List<Player>(__instance.data.GetAdditionalData().minions);
             __instance.data.GetAdditionalData().minions = new List<Player>() { };
             __instance.data.GetAdditionalData().isAIMinion = false;
+            __instance.data.GetAdditionalData().isEnabled = true;
             __instance.data.GetAdditionalData().spawner = null;
             __instance.data.GetAdditionalData().spawnLocation = AIMinionHandler.SpawnLocation.Owner_Random;
         }

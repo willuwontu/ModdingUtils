@@ -470,6 +470,10 @@ namespace ModdingUtils.Utils
                     }
                     catch (NotImplementedException)
                     { }
+                    catch (Exception exception)
+                    {
+                        UnityEngine.Debug.LogError("[ModdingUtils] EXCEPTION: " + exception.GetType().ToString() + "\nThrown by: " + card.GetComponent<CustomCard>().GetModName() + " - " + card.cardName + " - " + "OnRemoveCard(Player, Gun, GunAmmo, HealthHandler, Gravity, Block, CharacterStatModifiers)");
+                    }
                 }
             }
 

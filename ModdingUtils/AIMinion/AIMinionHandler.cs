@@ -23,6 +23,7 @@ namespace ModdingUtils.AIMinion
 {
     public static class AIMinionHandler
     {
+        internal const float stalemateCountdown = 10f;
         internal static bool playersCanJoin = true;
         internal const float actionDelay = 2.5f;
         internal static Coroutine EndStalemateRoutine = null;
@@ -43,7 +44,8 @@ namespace ModdingUtils.AIMinion
                 if (_AIBase != null) { return _AIBase; }
                 else
                 {
-                    _AIBase = new GameObject("AI", typeof(EnableDisablePlayer));
+                    _AIBase = new GameObject("AIMinion", typeof(EnableDisablePlayer));
+                    UnityEngine.GameObject.DontDestroyOnLoad(_AIBase);
                     return _AIBase;
                 }
             }
@@ -57,7 +59,6 @@ namespace ModdingUtils.AIMinion
                 ID += PlayerManager.instance.players.Count;
                 foreach (Player player in PlayerManager.instance.players)
                 {
-                    ID += Extensions.CharacterDataExtension.GetAdditionalData(player.data).minions.Count;
                     ID += Extensions.CharacterDataExtension.GetAdditionalData(player.data).minions.Count;
                 }
                 return ID;
@@ -81,11 +82,14 @@ namespace ModdingUtils.AIMinion
             int totPlayers = 0;
             foreach (Player player in PlayerManager.instance.players.Where(player => !Extensions.CharacterDataExtension.GetAdditionalData(player.data).isAIMinion))
             {
-                totPlayers += 1 + Extensions.CharacterDataExtension.GetAdditionalData(player.data).minions.Count;
+                totPlayers += 1 + Extensions.CharacterDataExtension.GetAdditionalData(player.data).minions.Count();
             }
             PlayerManager.instance.players = new List<Player>() { };
             for (int i = 0; i < totPlayers; i++)
             {
+                UnityEngine.Debug.Log(i);
+                if (!Extensions.CharacterDataExtension.GetAdditionalData(GetPlayerOrAIWithID(playersAndAI.ToArray(),i).data).isEnabled)
+                { continue; }
                 PlayerManager.instance.players.Add(GetPlayerOrAIWithID(playersAndAI.ToArray(), i));
             }
 
@@ -113,11 +117,11 @@ namespace ModdingUtils.AIMinion
 
             List<Player> minionsToSpawn = new List<Player>() { };
             List<Vector3> positions = new List<Vector3>() { };
-            foreach (Player player in PlayerManager.instance.players.Where(player => Extensions.CharacterDataExtension.GetAdditionalData(player.data).minions.Count > 0))
+            foreach (Player player in PlayerManager.instance.players.Where(player => Extensions.CharacterDataExtension.GetAdditionalData(player.data).minions.Where(m => Extensions.CharacterDataExtension.GetAdditionalData(m.data).isEnabled).Count() > 0))
             {
-                minionsToSpawn.AddRange(Extensions.CharacterDataExtension.GetAdditionalData(player.data).minions);
+                minionsToSpawn.AddRange(Extensions.CharacterDataExtension.GetAdditionalData(player.data).minions.Where(m => Extensions.CharacterDataExtension.GetAdditionalData(m.data).isEnabled));
                 int minionNum = 0;
-                foreach (Player minion in Extensions.CharacterDataExtension.GetAdditionalData(player.data).minions)
+                foreach (Player minion in Extensions.CharacterDataExtension.GetAdditionalData(player.data).minions.Where(m => Extensions.CharacterDataExtension.GetAdditionalData(m.data).isEnabled))
                 {
                     minionNum++;
                     positions.Add(AIMinionHandler.GetMinionSpawnLocation(minion, minionNum));
@@ -148,7 +152,7 @@ namespace ModdingUtils.AIMinion
         internal static IEnumerator RemoveAllAIs(IGameModeHandler gm)
         {
             List<Player> minionsToRemove = new List<Player>() { };
-            foreach (Player player in PlayerManager.instance.players.Where(player => Extensions.CharacterDataExtension.GetAdditionalData(player.data).minions.Count > 0))
+            foreach (Player player in PlayerManager.instance.players.Where(player => Extensions.CharacterDataExtension.GetAdditionalData(player.data).minions.Count() > 0))
             {
                 minionsToRemove.AddRange(Extensions.CharacterDataExtension.GetAdditionalData(player.data).minions);
             }
@@ -194,15 +198,23 @@ namespace ModdingUtils.AIMinion
             {
                 yield return new WaitForSecondsRealtime(0.1f);
             }
-            yield return new WaitForSecondsRealtime(10f);
-            foreach (Player minion in PlayerManager.instance.players.Where(player => Extensions.CharacterDataExtension.GetAdditionalData(player.data).isAIMinion && PlayerStatus.PlayerAliveAndSimulated(player)).OrderBy(i => UnityEngine.Random.value))
+            while (PlayerManager.instance.players.Where(player => PlayerStatus.PlayerAliveAndSimulated(player)).Any())
             {
-                minion.data.view.RPC("RPCA_Die", RpcTarget.All, new object[]
+                if (PhotonNetwork.IsMasterClient)
                 {
-                    new Vector2(0, 1)
-                });
+                    NetworkingManager.RPC(typeof(AIMinionHandler), nameof(EndStalemate), new object[] { stalemateCountdown });
+                }
+                yield return new WaitForSecondsRealtime(stalemateCountdown);
             }
             yield break;
+        }
+        [UnboundRPC]
+        private static void EndStalemate(float countdown)
+        {
+            foreach (Player minion in PlayerManager.instance.players.Where(player => Extensions.CharacterDataExtension.GetAdditionalData(player.data).isAIMinion && PlayerStatus.PlayerAliveAndSimulated(player)).OrderBy(i => UnityEngine.Random.value))
+            {
+                minion.data.healthHandler.TakeDamageOverTime(minion.data.maxHealth * Vector2.up, minion.transform.position, countdown, 0.25f, Color.white, null, null, true);
+            }
         }
 
         private readonly static float baseOffset = 2f;
@@ -353,6 +365,11 @@ namespace ModdingUtils.AIMinion
             }
             internal void EnablePlayer(Vector3? pos = null)
             {
+                if (!Extensions.CharacterDataExtension.GetAdditionalData(this.player.data).isEnabled)
+                {
+                    return;
+                }    
+
                 Vector3 Pos = pos ?? Vector3.zero;
 
                 this.player.data.weaponHandler.gun.sinceAttack = -1f;
@@ -367,6 +384,11 @@ namespace ModdingUtils.AIMinion
             }
             internal void ReviveAndSpawn(Vector3? pos = null, bool isFullRevive = true)
             {
+                if (!Extensions.CharacterDataExtension.GetAdditionalData(this.player.data).isEnabled)
+                {
+                    return;
+                }
+
                 Vector3 Pos = pos ?? Vector3.zero;
 
                 this.player.GetComponent<GeneralInput>().enabled = true;
@@ -522,20 +544,22 @@ namespace ModdingUtils.AIMinion
                 {
                     case AIAggression.Peaceful:
                         {
-                            switch (UnityEngine.Random.Range(0, 2))
-                            {
-                                case 0:
-                                    {
+                            //switch (UnityEngine.Random.Range(0, 2))
+                            //{
+                              //  case 0:
+                                //    {
                                         AIController = AI.Petter;
                                         break;
-                                    }
+                                  //  }
+                                    /*
+                                     * Zorro doesn't work.
                                 case 1:
                                     {
                                         AIController = AI.Zorro;
                                         break;
-                                    }
-                            }
-                            break;
+                                    }*/
+                            //}
+                            //break;
                         }
                     case AIAggression.Normal:
                         {
@@ -638,21 +662,6 @@ namespace ModdingUtils.AIMinion
             PlayerAssigner.instance.players.Add(AIdata);
             AIdata.player.AssignTeamID(teamID);
             
-            /*
-            Unbound.Instance.StartCoroutine(ExecuteWhenAIIsReady(newID, AIdata.view.ControllerActorNr, (mID, aID) =>
-            {
-                Player minion = FindPlayer.GetPlayerWithActorAndPlayerIDs(aID, mID);
-
-                // set the player skin correctly
-                GameObject AISkinOrig = minion.GetTeamColors().gameObject;
-                GameObject AISkinSlot = minion.GetComponentInChildren<PlayerSkin>().gameObject.transform.parent.gameObject;
-                UnityEngine.GameObject.Destroy(AISkinSlot.transform.GetChild(0).gameObject);
-                GameObject AISkin = UnityEngine.GameObject.Instantiate(AISkinOrig, AISkinSlot.transform);
-                AISkin.GetComponent<PlayerSkinParticle>().Init(703124351);
-
-                minion.GetComponentInChildren<PlayerSkinHandler>().SetFieldValue("skins", new PlayerSkinParticle[] { AISkin.GetComponent<PlayerSkinParticle>() });
-            }, 5f));
-            */
             if (activeNow)
             {
                 PlayerManager.instance.players.Add(AIdata.player);
@@ -684,6 +693,7 @@ namespace ModdingUtils.AIMinion
 
 
             Unbound.Instance.StartCoroutine(ExecuteWhenAIIsReady(newID, actorID, (mID, aID) => ApplyStatsWhenReady(mID, aID, blockStats, gunAmmoStats, gunStats, characterStats, gravityStats, effects)));
+            Unbound.Instance.StartCoroutine(ExecuteWhenAIIsReady(newID, actorID, (mID, aID) => RemovePlayerName(mID, aID), 0.5f));            
 
             if (Finalizer != null)
             {
@@ -722,6 +732,18 @@ namespace ModdingUtils.AIMinion
             }
             yield return ExecuteWhenAIIsReady(minionID, actorID, ActionEnum, delay);
             yield break;
+        }
+        private static void RemovePlayerName(int minionID, int actorID)
+        {
+            Player minion = FindPlayer.GetPlayerWithActorAndPlayerIDs(actorID, minionID);
+            PlayerName[] playerNames = minion.gameObject.GetComponentsInChildren<PlayerName>();
+            foreach (PlayerName name in playerNames.ToList())
+            {
+                if (name != null && name.gameObject != null)
+                {
+                    name.gameObject.SetActive(false);
+                }
+            }
         }
         private static IEnumerator SetFace(int minionID, int actorID, int eyeID = 0, Vector2 eyeOffset = default(Vector2), int mouthID = 0, Vector2 mouthOffset = default(Vector2), int detailID = 0, Vector2 detailOffset = default(Vector2), int detail2ID = 0, Vector2 detail2Offset = default(Vector2))
         {
@@ -891,6 +913,23 @@ namespace ModdingUtils.AIMinion
             Enemy_Back
         }
 
+    }
+    // patch to prevent lag with PlayerAIWilhelm
+    [Serializable]
+    [HarmonyPatch(typeof(PlayerAIWilhelm), "Update")]
+    class PlayerAIWilhelmPatchUpdate
+    {
+        private static bool Prefix(PlayerAIWilhelm __instance)
+        {
+            if (((PlayerAPI)__instance.GetFieldValue("api")).GetOtherPlayer() == null)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
     }
 
     // patch to "fix" PlayerAIPetter

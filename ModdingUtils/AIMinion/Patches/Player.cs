@@ -10,12 +10,13 @@ namespace ModdingUtils.AIMinion.Patches
     // patch to prevent game crash
     [Serializable]
     [HarmonyPatch(typeof(Player), "GetFaceOffline")]
+    [HarmonyBefore("com.willis.rounds.unbound")]
     class PlayerPatchGetFaceOffline
     {
         private static bool Prefix(Player __instance)
         {
 
-            if (__instance.playerID >= CharacterCreatorHandler.instance.selectedPlayerFaces.Length)
+            if (__instance.playerID >= CharacterCreatorHandler.instance.selectedPlayerFaces.Length || __instance.playerID < 0)
             {
                 return false;
             }
