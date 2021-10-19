@@ -7,6 +7,11 @@ namespace ModdingUtils.Extensions
     {
         public static Color GetColorMax(Player player)
         {
+            if (player.gameObject.GetComponentInChildren<PlayerSkinHandler>().simpleSkin)
+            {
+                return GetSimpleColor(player);
+            }
+
             // I "borrowed" this code from Willis
             Color colorMax = Color.clear;
             Color colorMin = Color.clear;
@@ -25,6 +30,11 @@ namespace ModdingUtils.Extensions
         }
         public static Color GetColorMin(Player player)
         {
+            if (player.gameObject.GetComponentInChildren<PlayerSkinHandler>().simpleSkin)
+            {
+                return GetSimpleColor(player);
+            }
+
             // I "borrowed" this code from Willis
             Color colorMax = Color.clear;
             Color colorMin = Color.clear;
@@ -40,6 +50,11 @@ namespace ModdingUtils.Extensions
             }
 
             return colorMin;
+        }
+
+        public static Color GetSimpleColor(Player player)
+        {
+            return player.gameObject.GetComponentInChildren<SetPlayerSpriteLayer>().transform.root.GetComponentInChildren<SpriteMask>().GetComponent<SpriteRenderer>().color;
         }
     }
 }

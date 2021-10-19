@@ -598,6 +598,8 @@ namespace ModdingUtils.AIMinion
         }
         internal static Player SpawnAI(int newID, int spawnerID, int teamID, int actorID, bool activeNow = false, AISkill skill = AISkill.None, AIAggression aggression = AIAggression.None, AI AItype = AI.None, SpawnLocation spawnLocation = SpawnLocation.Owner_Random, float? maxHealth = null)
         {
+            Player spawner = Utils.FindPlayer.GetPlayerWithActorAndPlayerIDs(actorID, spawnerID);
+
 
             if (activeNow)
             {
@@ -606,6 +608,12 @@ namespace ModdingUtils.AIMinion
 
             Vector3 position = Vector3.up * 100f;
             CharacterData AIdata = PhotonNetwork.Instantiate(PlayerAssigner.instance.playerPrefab.name, position, Quaternion.identity, 0, null).GetComponent<CharacterData>();
+            // mark this player as an AI
+            Extensions.CharacterDataExtension.GetAdditionalData(AIdata).isAIMinion = true;
+            // add the spawner to the AI's data
+            Extensions.CharacterDataExtension.GetAdditionalData(AIdata).spawner = spawner;
+            // set spawn location
+            Extensions.CharacterDataExtension.GetAdditionalData(AIdata).spawnLocation = spawnLocation;
 
             NetworkingManager.RPC(typeof(AIMinionHandler), nameof(RPCA_SetupAI), new object[] { newID, AIdata.view.ViewID, actorID, spawnerID, teamID, activeNow, (byte)skill, (byte)aggression, (byte)AItype, (byte)spawnLocation, maxHealth });
 
@@ -675,6 +683,8 @@ namespace ModdingUtils.AIMinion
                 Traverse.Create(AIdata.player.data.playerVel).Field("simulated").SetValue(false);
                 
             }
+
+            Unbound.Instance.StartCoroutine(ExecuteWhenAIIsReady(newID, spawnerActorID, (mID, aID) => RemovePlayerName(mID, aID), 1f));
         }
 
         public static void CreateAIWithStats(bool IsMine, int spawnerID, int teamID, int actorID, AISkill skill = AISkill.None, AIAggression aggression = AIAggression.None, AI AItype = AI.None, float? maxHealth = null, BlockModifier blockStats = null, GunAmmoStatModifier gunAmmoStats = null, GunStatModifier gunStats = null, CharacterStatModifiersModifier characterStats = null, GravityModifier gravityStats = null, List<System.Type> effects = null, List<CardInfo> cards = null, bool cardsAreReassigned = false, SpawnLocation spawnLocation = SpawnLocation.Owner_Random, int eyeID = 0, Vector2 eyeOffset = default(Vector2), int mouthID = 0, Vector2 mouthOffset = default(Vector2), int detailID = 0, Vector2 detailOffset = default(Vector2), int detail2ID = 0, Vector2 detail2Offset = default(Vector2), bool activeNow = false, Func<int, int, IEnumerator> Finalizer = null, Action<int, int> Callback = null)
@@ -693,7 +703,6 @@ namespace ModdingUtils.AIMinion
 
 
             Unbound.Instance.StartCoroutine(ExecuteWhenAIIsReady(newID, actorID, (mID, aID) => ApplyStatsWhenReady(mID, aID, blockStats, gunAmmoStats, gunStats, characterStats, gravityStats, effects)));
-            Unbound.Instance.StartCoroutine(ExecuteWhenAIIsReady(newID, actorID, (mID, aID) => RemovePlayerName(mID, aID), 0.5f));            
 
             if (Finalizer != null)
             {
@@ -739,9 +748,9 @@ namespace ModdingUtils.AIMinion
             PlayerName[] playerNames = minion.gameObject.GetComponentsInChildren<PlayerName>();
             foreach (PlayerName name in playerNames.ToList())
             {
-                if (name != null && name.gameObject != null)
+                if (name != null && name.gameObject != null && name.gameObject.GetComponent<TextMeshProUGUI>() != null)
                 {
-                    name.gameObject.SetActive(false);
+                    name.gameObject.GetComponent<TextMeshProUGUI>().text = "";
                 }
             }
         }
