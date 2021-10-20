@@ -1,6 +1,6 @@
 {
     "name": "ModdingUtils",
-    "version_number": "0.1.8",
+    "version_number": "0.2.0",
     "website_url": "https://github.com/pdcook/ModdingUtils",
     "description": "Utilities aimed at making modding easier and more accessible",
     "dependencies": [
