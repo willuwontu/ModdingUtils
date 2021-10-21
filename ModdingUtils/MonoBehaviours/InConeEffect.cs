@@ -87,7 +87,7 @@ namespace ModdingUtils.MonoBehaviours
         void Update()
         {
             // if the player is alive, simulated, and the conditions are met
-            if (PlayerStatus.PlayerAliveAndSimulated(player) && ConditionsMet())
+            if (Utils.PlayerStatus.PlayerAliveAndSimulated(player) && ConditionsMet())
             {
                 if (period == 0f && !effectApplied)
                 {
@@ -169,7 +169,7 @@ namespace ModdingUtils.MonoBehaviours
             }
 
             Vector2 displacement = otherPlayer.transform.position - player.transform.position;
-            return (PlayerStatus.PlayerAliveAndSimulated(otherPlayer) && lineOfSight && displacement.magnitude <= range && Vector2.Angle(centerRay, displacement) <= Math.Abs(angle / 2));
+            return (Utils.PlayerStatus.PlayerAliveAndSimulated(otherPlayer) && lineOfSight && displacement.magnitude <= range && Vector2.Angle(centerRay, displacement) <= Math.Abs(angle / 2));
         }
         public void OnDisable()
         {

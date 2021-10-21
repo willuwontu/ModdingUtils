@@ -195,12 +195,12 @@ namespace ModdingUtils.AIMinion
             yield return new WaitForSecondsRealtime(2f);
 
             // wait until there are only AIs alive, wait a few seconds, then kill them
-            while (PlayerManager.instance.players.Where(player => !Extensions.CharacterDataExtension.GetAdditionalData(player.data).isAIMinion && PlayerStatus.PlayerAliveAndSimulated(player)).Any())
+            while (PlayerManager.instance.players.Where(player => !Extensions.CharacterDataExtension.GetAdditionalData(player.data).isAIMinion && Utils.PlayerStatus.PlayerAliveAndSimulated(player)).Any())
             {
                 yield return new WaitForSecondsRealtime(0.5f);
             }
             yield return new WaitForSecondsRealtime(stalemateCountdown);
-            while (PlayerManager.instance.players.Where(player => PlayerStatus.PlayerAliveAndSimulated(player)).Any())
+            while (PlayerManager.instance.players.Where(player => Utils.PlayerStatus.PlayerAliveAndSimulated(player)).Any())
             {
                 if (PhotonNetwork.IsMasterClient)
                 {
@@ -213,7 +213,7 @@ namespace ModdingUtils.AIMinion
         [UnboundRPC]
         private static void EndStalemate(float secondsToTakeDamageOver, float damage)
         {
-            foreach (Player minion in PlayerManager.instance.players.Where(player => Extensions.CharacterDataExtension.GetAdditionalData(player.data).isAIMinion && PlayerStatus.PlayerAliveAndSimulated(player)).OrderBy(i => UnityEngine.Random.value))
+            foreach (Player minion in PlayerManager.instance.players.Where(player => Extensions.CharacterDataExtension.GetAdditionalData(player.data).isAIMinion && Utils.PlayerStatus.PlayerAliveAndSimulated(player)).OrderBy(i => UnityEngine.Random.value))
             {
                 minion.data.healthHandler.TakeDamageOverTime(damage* Vector2.up, minion.transform.position, secondsToTakeDamageOver, 0.5f, Color.white, null, null, true);
             }
@@ -296,7 +296,7 @@ namespace ModdingUtils.AIMinion
                     }
                 case SpawnLocation.Enemy_Random:
                     {
-                        Player enemy = PlayerStatus.GetRandomEnemyPlayer(minion);
+                        Player enemy = Utils.PlayerStatus.GetRandomEnemyPlayer(minion);
                         if (enemy == null)
                         {
                             return RandomValidPosition();
@@ -317,7 +317,7 @@ namespace ModdingUtils.AIMinion
                     }
                 case SpawnLocation.Enemy_Front:
                     {
-                        Player enemy = PlayerStatus.GetRandomEnemyPlayer(minion);
+                        Player enemy = Utils.PlayerStatus.GetRandomEnemyPlayer(minion);
                         if (enemy == null)
                         {
                             return RandomValidPosition();
@@ -326,7 +326,7 @@ namespace ModdingUtils.AIMinion
                     }
                 case SpawnLocation.Enemy_Back:
                     {
-                        Player enemy = PlayerStatus.GetRandomEnemyPlayer(minion);
+                        Player enemy = Utils.PlayerStatus.GetRandomEnemyPlayer(minion);
                         if (enemy == null)
                         {
                             return RandomValidPosition();
@@ -727,7 +727,7 @@ namespace ModdingUtils.AIMinion
             {
                 Player minion = Utils.FindPlayer.GetPlayerWithActorAndPlayerIDs(actorID, minionID);
 
-                return (minion != null && PlayerManager.instance.players.Contains(minion) && minion.gameObject.activeSelf && PlayerStatus.PlayerAliveAndSimulated(minion));
+                return (minion != null && PlayerManager.instance.players.Contains(minion) && minion.gameObject.activeSelf && Utils.PlayerStatus.PlayerAliveAndSimulated(minion));
             });
             yield return new WaitForSecondsRealtime(delay);
 

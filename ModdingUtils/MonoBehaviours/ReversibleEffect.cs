@@ -36,7 +36,7 @@ namespace ModdingUtils.MonoBehaviours
             get
             {
                 if (player == null) { return -1; }
-                int num = PlayerStatus.GetNumberOfEnemyPlayers(player);
+                int num = Utils.PlayerStatus.GetNumberOfEnemyPlayers(player);
                 if (num > 0)
                 {
                     return num;
@@ -84,7 +84,7 @@ namespace ModdingUtils.MonoBehaviours
         public void Start()
         {
 
-            wasActiveLastFrame = PlayerStatus.PlayerAliveAndSimulated(player);
+            wasActiveLastFrame = Utils.PlayerStatus.PlayerAliveAndSimulated(player);
 
             OnStart();
 
@@ -119,7 +119,7 @@ namespace ModdingUtils.MonoBehaviours
         }
         void Update()
         {
-            if (wasActiveLastFrame && !PlayerStatus.PlayerAliveAndSimulated(player))
+            if (wasActiveLastFrame && !Utils.PlayerStatus.PlayerAliveAndSimulated(player))
             {
                 livesEffected++;
             }
@@ -138,7 +138,7 @@ namespace ModdingUtils.MonoBehaviours
         }
         public void LateUpdate()
         {
-            wasActiveLastFrame = PlayerStatus.PlayerAliveAndSimulated(player);
+            wasActiveLastFrame = Utils.PlayerStatus.PlayerAliveAndSimulated(player);
 
             OnLateUpdate();
         }
