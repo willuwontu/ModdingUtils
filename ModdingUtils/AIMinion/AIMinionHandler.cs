@@ -18,6 +18,7 @@ using ModdingUtils.Utils;
 using ModdingUtils;
 using ModdingUtils.Extensions;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace ModdingUtils.AIMinion
 {
@@ -1043,6 +1044,117 @@ namespace ModdingUtils.AIMinion
         }
 
     }
+
+    // patches to address lag in PlayerAIPhilip
+    [Serializable]
+    [HarmonyPatch(typeof(PlayerAIPhilip), "Start")]
+    class PlayerAIPhilipPatchStart
+    {
+        private static void Prefix(PlayerAIPhilip __instance)
+        {
+            __instance.GetAdditionalData().lessEssentialTimer = -10f;
+            __instance.GetAdditionalData().nonEssentialTimer = -10f;
+        }
+    }
+    [Serializable]
+    [HarmonyPatch(typeof(PlayerAIPhilip),"Update")]
+    class PlayerAIPhilipPatchUpdate
+    {
+        private const float lessEssentialDelay = 0.02f;
+        private const float nonEssentialDelay = 0.25f;
+        private static bool Prefix(PlayerAIPhilip __instance, float ___m_Tick, PlayerAPI ___m_PlayerAPI)
+        {
+            if (!(bool)__instance.InvokeMethod("CheckForValidEnemy"))
+            {
+                return false;
+            }
+            // essential tasks that must be run every frame
+            __instance.InvokeMethod("Move"); // essential
+            __instance.InvokeMethod("DoAim"); // essential
+            //__instance.InvokeMethod("ShouldBlock"); // essential, but replace with more efficient method
+            ShouldBlock(___m_PlayerAPI);
+            __instance.InvokeMethod("TickBehaviour"); // essential
+
+            if (Time.time >= __instance.GetAdditionalData().lessEssentialTimer + lessEssentialDelay)
+            {
+                // less essential tasks that must be run often
+                __instance.InvokeMethod("CheckGround"); // less essential
+                __instance.InvokeMethod("ShouldAttack"); // less essential
+
+                __instance.GetAdditionalData().lessEssentialTimer = Time.time;
+            }
+
+            if (Time.time >= __instance.GetAdditionalData().nonEssentialTimer + nonEssentialDelay)
+            {
+                // non-essential tasks that can be run less frequently
+                __instance.InvokeMethod("CheckMorale"); // non-essential
+                __instance.InvokeMethod("CheckDirection"); // non-essential
+                if (___m_PlayerAPI.player.data.stats.jump != 0f)
+                {
+                    __instance.InvokeMethod("Jump"); // definitely not essential
+                }
+
+                __instance.GetAdditionalData().nonEssentialTimer = Time.time;
+
+            }
+
+            // entirely replace original
+            return false;
+        }
+        private static void ShouldBlock(PlayerAPI playerAPI)
+        {
+            if (CheckIncommingBullets(playerAPI))
+            {
+                playerAPI.Block();
+            }
+        }
+        private static bool CheckIncommingBullets(PlayerAPI playerAPI)
+        {
+            foreach (BulletWrapper bulletWrapper in playerAPI.GetAllBullets())
+            {
+                RaycastHit2D raycastHit2D = Physics2D.Raycast(bulletWrapper.projectileMovement.transform.position, bulletWrapper.projectileMovement.velocity.normalized, bulletWrapper.velocity.magnitude * 5f * TimeHandler.deltaTime, LayerMask.GetMask("Default", "Player", "IgnorePlayer"));
+                if (raycastHit2D.transform && (!bulletWrapper.projectileHit.ownPlayer || bulletWrapper.projectileHit.ownPlayer != playerAPI.player) && raycastHit2D.collider.GetComponentInParent<Player>() == playerAPI.player)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+    // ADD FIELDS TO CHARACTERDATA
+    [Serializable]
+    public class PlayerAIPhilipAdditionalData
+    {
+        public float lessEssentialTimer;
+        public float nonEssentialTimer;
+
+        public PlayerAIPhilipAdditionalData()
+        {
+            lessEssentialTimer = 0f;
+            nonEssentialTimer = 0f;
+        }
+    }
+    // add fields to PlayerAIPhilip
+    public static class PlayerAIPhilipExtension
+    {
+        public static readonly ConditionalWeakTable<PlayerAIPhilip, PlayerAIPhilipAdditionalData> data =
+            new ConditionalWeakTable<PlayerAIPhilip, PlayerAIPhilipAdditionalData>();
+
+        public static PlayerAIPhilipAdditionalData GetAdditionalData(this PlayerAIPhilip playerAIPhilip)
+        {
+            return data.GetOrCreateValue(playerAIPhilip);
+        }
+
+        public static void AddData(this PlayerAIPhilip playerAIPhilip, PlayerAIPhilipAdditionalData value)
+        {
+            try
+            {
+                data.Add(playerAIPhilip, value);
+            }
+            catch (Exception) { }
+        }
+    }
+
 
     // force AI to not shoot/block for first few seconds of battle start
     [Serializable]
