@@ -110,15 +110,15 @@ namespace ModdingUtils.AIMinion.Patches
                                     NetworkingManager.RPC_Others(typeof(ProjectileInitPatchDoAttack), nameof(RPCO_Init_SeparateGun), new object[]
                                     {
                                             gameObject.GetComponent<PhotonView>().ViewID,
-                                            __instance.holdable.holder.view.OwnerActorNr,
-                                            __instance.holdable.holder.player.playerID,
+                                            __instance.GetComponentInParent<CharacterData>().view.OwnerActorNr,
+                                            __instance.GetComponentInParent<CharacterData>().player.playerID,
                                             (int)__instance.GetFieldValue("gunID"),
                                             currentNumberOfProjectiles,
                                             damageM,
                                             seed
                                     });
                                 }
-                                OFFLINE_Init_SeparateGun(gameObject.GetComponent<ProjectileInit>(), __instance.holdable.holder.player.data.view.ControllerActorNr, __instance.holdable.holder.player.playerID, (int)__instance.GetFieldValue("gunID"), currentNumberOfProjectiles, damageM, seed);
+                                OFFLINE_Init_SeparateGun(gameObject.GetComponent<ProjectileInit>(), __instance.GetComponentInParent<CharacterData>().view.ControllerActorNr, __instance.GetComponentInParent<CharacterData>().player.playerID, (int)__instance.GetFieldValue("gunID"), currentNumberOfProjectiles, damageM, seed);
 
                             }
                         }

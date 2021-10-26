@@ -16,6 +16,7 @@ namespace ModdingUtils.AIMinion.Extensions
         public bool isEnabled;
         public Player spawner;
         public AIMinionHandler.SpawnLocation spawnLocation;
+        public bool autoBlock;
 
         public CharacterDataAdditionalData()
         {
@@ -25,6 +26,7 @@ namespace ModdingUtils.AIMinion.Extensions
             isEnabled = true;
             spawner = null;
             spawnLocation = AIMinionHandler.SpawnLocation.Owner_Random;
+            autoBlock = false;
         }
     }
     public static class CharacterDataExtension
@@ -58,6 +60,7 @@ namespace ModdingUtils.AIMinion.Extensions
             __instance.data.GetAdditionalData().isEnabled = true;
             __instance.data.GetAdditionalData().spawner = null;
             __instance.data.GetAdditionalData().spawnLocation = AIMinionHandler.SpawnLocation.Owner_Random;
+            __instance.data.GetAdditionalData().autoBlock = false;
         }
     }
     

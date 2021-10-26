@@ -1054,6 +1054,31 @@ namespace ModdingUtils.AIMinion
         {
             __instance.GetAdditionalData().lessEssentialTimer = -10f;
             __instance.GetAdditionalData().nonEssentialTimer = -10f;
+
+            __instance.StartCoroutine(SetAutoBlockWhenPlayerIDIsAssigned(__instance));
+
+        }
+        private static IEnumerator SetAutoBlockWhenPlayerIDIsAssigned(PlayerAIPhilip __instance)
+        {
+            yield return new WaitUntil(() =>
+            {
+                return ((PlayerAPI)__instance.GetFieldValue("m_PlayerAPI")).player.playerID != -1;
+            });
+
+            NetworkingManager.RPC(typeof(PlayerAIPhilipPatchStart), nameof(RPCA_SetAutoBlock), new object[] { ((PlayerAPI)__instance.GetFieldValue("m_PlayerAPI")).player.playerID, ((PlayerAPI)__instance.GetFieldValue("m_PlayerAPI")).player.data.view.ControllerActorNr});
+
+            yield break;
+        }
+        [UnboundRPC]
+        private static void RPCA_SetAutoBlock(int playerID, int actorID)
+        {
+            Unbound.Instance.StartCoroutine(AIMinionHandler.ExecuteWhenAIIsReady(playerID, actorID, (mID, aID) =>
+            {
+                Player player = FindPlayer.GetPlayerWithActorAndPlayerIDs(aID, mID);
+                Extensions.CharacterDataExtension.GetAdditionalData(player.data).autoBlock = true;
+            }, 0.5f));
+
+            
         }
     }
     [Serializable]
@@ -1072,7 +1097,7 @@ namespace ModdingUtils.AIMinion
             __instance.InvokeMethod("Move"); // essential
             __instance.InvokeMethod("DoAim"); // essential
             //__instance.InvokeMethod("ShouldBlock"); // essential, but replace with more efficient method
-            ShouldBlock(___m_PlayerAPI);
+            //ShouldBlock(___m_PlayerAPI);
             __instance.InvokeMethod("TickBehaviour"); // essential
 
             if (Time.time >= __instance.GetAdditionalData().lessEssentialTimer + lessEssentialDelay)
