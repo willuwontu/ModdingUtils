@@ -35,13 +35,13 @@ namespace ModdingUtils.Utils
             }
         }
 
-        public CardBar PlayersCardBar(int teamID)
+        public CardBar PlayersCardBar(int playerID)
         {
-            return CardBars[teamID];
+            return CardBars[playerID];
         }
         public CardBar PlayersCardBar(Player player)
         {
-            return CardBars[player.teamID];
+            return CardBars[player.playerID];
         }
 
         private CardBarUtils()
@@ -72,30 +72,30 @@ namespace ModdingUtils.Utils
 
         public void ShowCard(Player player, CardInfo card)
         {
-            ShowCard(player.teamID, card.name);
+            ShowCard(player.playerID, card.name);
         }
-        public void ShowCard(int teamID, CardInfo card)
+        public void ShowCard(int playerID, CardInfo card)
         {
-            ShowCard(teamID, card.name);
+            ShowCard(playerID, card.name);
         }
         public void ShowCard(Player player, int cardID)
         {
-            ShowCard(player.teamID, Cards.instance.GetCardWithID(cardID).name);
+            ShowCard(player.playerID, Cards.instance.GetCardWithID(cardID).name);
         }
-        public void ShowCard(int teamID, int cardID)
+        public void ShowCard(int playerID, int cardID)
         {
-            ShowCard(teamID, Cards.instance.GetCardWithID(cardID).name);
+            ShowCard(playerID, Cards.instance.GetCardWithID(cardID).name);
         }
-        public void ShowCard(int teamID, string cardName)
+        public void ShowCard(int playerID, string cardName)
         {
             if (PhotonNetwork.OfflineMode || PhotonNetwork.IsMasterClient)
             {
-                NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_ShowCard), new object[] { teamID, cardName });
+                NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_ShowCard), new object[] { playerID, cardName });
             }
         }
 
         [UnboundRPC]
-        private static void RPCA_ShowCard(int teamID, string cardName)
+        private static void RPCA_ShowCard(int playerID, string cardName)
         {
             int cardID = Cards.instance.GetCardID(cardName);
 
@@ -107,74 +107,74 @@ namespace ModdingUtils.Utils
             {
                 return;
             }
-            instance.PlayersCardBar(teamID).OnHover(Cards.instance.GetCardWithID(cardID), Vector3.zero);
-            ((GameObject)Traverse.Create(instance.PlayersCardBar(teamID)).Field("currentCard").GetValue()).gameObject.transform.localScale = Vector3.one * cardLocalScaleMult;
+            instance.PlayersCardBar(playerID).OnHover(Cards.instance.GetCardWithID(cardID), Vector3.zero);
+            ((GameObject)Traverse.Create(instance.PlayersCardBar(playerID)).Field("currentCard").GetValue()).gameObject.transform.localScale = Vector3.one * cardLocalScaleMult;
 
         }
 
         public void HideCard(Player player)
         {
-            HideCard(player.teamID);
+            HideCard(player.playerID);
         }
-        public void HideCard(int teamID)
+        public void HideCard(int playerID)
         {
             if (PhotonNetwork.OfflineMode || PhotonNetwork.IsMasterClient)
             {
-                NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_HideCard), new object[] { teamID });
+                NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_HideCard), new object[] { playerID });
             }
         }
         [UnboundRPC]
-        private static void RPCA_HideCard(int teamID)
+        private static void RPCA_HideCard(int playerID)
         {
-            instance.PlayersCardBar(teamID).StopHover();
+            instance.PlayersCardBar(playerID).StopHover();
         }
         [UnboundRPC]
-        private static void RPCA_HighlightCardBar(int teamID)
+        private static void RPCA_HighlightCardBar(int playerID)
         {
-            instance.PlayersCardBar(teamID).gameObject.transform.localScale = Vector3.one * barlocalScaleMult;
-            instance.PlayersCardBar(teamID).gameObject.transform.localPosition += localShift;
-            instance.ChangePlayersLineColor(teamID, Color.white);
-            Color.RGBToHSV(instance.GetPlayersBarColor(teamID), out float h, out float s, out float v);
-            instance.ChangePlayersBarColor(teamID, Color.HSVToRGB(h, s + 0.1f, v + 0.1f));
+            instance.PlayersCardBar(playerID).gameObject.transform.localScale = Vector3.one * barlocalScaleMult;
+            instance.PlayersCardBar(playerID).gameObject.transform.localPosition += localShift;
+            instance.ChangePlayersLineColor(playerID, Color.white);
+            Color.RGBToHSV(instance.GetPlayersBarColor(playerID), out float h, out float s, out float v);
+            instance.ChangePlayersBarColor(playerID, Color.HSVToRGB(h, s + 0.1f, v + 0.1f));
         }
         [UnboundRPC]
-        private static void RPCA_UnhighlightCardBar(int teamID, float r, float g, float b, float a)
+        private static void RPCA_UnhighlightCardBar(int playerID, float r, float g, float b, float a)
         {
-            instance.PlayersCardBar(teamID).gameObject.transform.localScale = Vector3.one * 1f;
-            instance.PlayersCardBar(teamID).gameObject.transform.localPosition -= localShift;
-            instance.ResetPlayersLineColor(teamID);
-            instance.ChangePlayersBarColor(teamID, new Color(r,g,b,a));
+            instance.PlayersCardBar(playerID).gameObject.transform.localScale = Vector3.one * 1f;
+            instance.PlayersCardBar(playerID).gameObject.transform.localPosition -= localShift;
+            instance.ResetPlayersLineColor(playerID);
+            instance.ChangePlayersBarColor(playerID, new Color(r,g,b,a));
         }
-        public Color HighlightCardBar(int teamID)
+        public Color HighlightCardBar(int playerID)
         {
-            Color orig = GetPlayersBarColor(teamID);
+            Color orig = GetPlayersBarColor(playerID);
             if (PhotonNetwork.OfflineMode || PhotonNetwork.IsMasterClient)
             {
-                NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_HighlightCardBar), new object[] { teamID });
+                NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_HighlightCardBar), new object[] { playerID });
             }
             return orig;
         }
-        public void UnhighlightCardBar(int teamID, Color original_color)
+        public void UnhighlightCardBar(int playerID, Color original_color)
         {
             if (PhotonNetwork.OfflineMode || PhotonNetwork.IsMasterClient)
             {
-                NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_UnhighlightCardBar), new object[] { teamID, original_color.r, original_color.g, original_color.b, original_color.a });
+                NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_UnhighlightCardBar), new object[] { playerID, original_color.r, original_color.g, original_color.b, original_color.a });
             }
         }
-        public GameObject GetCardBarSquare(int teamID, int idx)
+        public GameObject GetCardBarSquare(int playerID, int idx)
         {
-            return GetCardBarSquares(teamID)[idx + 1];
+            return GetCardBarSquares(playerID)[idx + 1];
         }
         public GameObject GetCardBarSquare(Player player, int idx)
         {
-            return GetCardBarSquare(player.teamID, idx);
+            return GetCardBarSquare(player.playerID, idx);
         }
 
-        public GameObject[] GetCardBarSquares(int teamID)
+        public GameObject[] GetCardBarSquares(int playerID)
         {
             List<GameObject> children = new List<GameObject>();
 
-            foreach (Transform child in PlayersCardBar(teamID).transform)
+            foreach (Transform child in PlayersCardBar(playerID).transform)
             {
                 children.Add(child.gameObject);
             }
@@ -184,11 +184,11 @@ namespace ModdingUtils.Utils
 
         public GameObject[] GetCardBarSquares(Player player)
         {
-            return GetCardBarSquares(player.teamID);
+            return GetCardBarSquares(player.playerID);
         }
-        public void ResetPlayersLineColor(int teamID)
+        public void ResetPlayersLineColor(int playerID)
         {
-            List<Graphic> graphics = PlayersCardBar(teamID).gameObject.GetComponentsInChildren<Graphic>().Where(gr => !gr.gameObject.name.Contains("CarrdOrange")).ToList();
+            List<Graphic> graphics = PlayersCardBar(playerID).gameObject.GetComponentsInChildren<Graphic>().Where(gr => !gr.gameObject.name.Contains("CarrdOrange")).ToList();
 
             foreach (Graphic graphic in graphics)
             {
@@ -204,11 +204,11 @@ namespace ModdingUtils.Utils
         }
         public void ResetPlayersLineColor(Player player)
         {
-            ResetPlayersLineColor(player.teamID);
+            ResetPlayersLineColor(player.playerID);
         }
-        public void ChangePlayersLineColor(int teamID, Color color)
+        public void ChangePlayersLineColor(int playerID, Color color)
         {
-            List<Graphic> graphics = PlayersCardBar(teamID).gameObject.GetComponentsInChildren<Graphic>().Where(gr => !gr.gameObject.name.Contains("CarrdOrange")).ToList();
+            List<Graphic> graphics = PlayersCardBar(playerID).gameObject.GetComponentsInChildren<Graphic>().Where(gr => !gr.gameObject.name.Contains("CarrdOrange")).ToList();
 
             foreach (Graphic graphic in graphics)
             {
@@ -217,23 +217,23 @@ namespace ModdingUtils.Utils
         }
         public void ChangePlayersLineColor(Player player, Color color)
         {
-            ChangePlayersLineColor(player.teamID, color);
+            ChangePlayersLineColor(player.playerID, color);
         }
 
-        public Color GetPlayersBarColor(int teamID)
+        public Color GetPlayersBarColor(int playerID)
         {
-            List<Graphic> graphics = PlayersCardBar(teamID).gameObject.GetComponentsInChildren<Graphic>().Where(gr => gr.gameObject.name.Contains("CarrdOrange")).ToList();
+            List<Graphic> graphics = PlayersCardBar(playerID).gameObject.GetComponentsInChildren<Graphic>().Where(gr => gr.gameObject.name.Contains("CarrdOrange")).ToList();
 
             return graphics[0].color;
         }
         public Color GetPlayersBarColor(Player player)
         {
-            return GetPlayersBarColor(player.teamID);
+            return GetPlayersBarColor(player.playerID);
         }
 
-        public Color ChangePlayersBarColor(int teamID, Color color)
+        public Color ChangePlayersBarColor(int playerID, Color color)
         {
-            List<Graphic> graphics = PlayersCardBar(teamID).gameObject.GetComponentsInChildren<Graphic>().Where(gr => gr.gameObject.name.Contains("CarrdOrange")).ToList();
+            List<Graphic> graphics = PlayersCardBar(playerID).gameObject.GetComponentsInChildren<Graphic>().Where(gr => gr.gameObject.name.Contains("CarrdOrange")).ToList();
 
             Color orig = graphics[0].color;
 
@@ -247,7 +247,7 @@ namespace ModdingUtils.Utils
 
         public Color ChangePlayersBarColor(Player player, Color color)
         {
-            return ChangePlayersBarColor(player.teamID, color);
+            return ChangePlayersBarColor(player.playerID, color);
         }
 
         public Color GetCardSquareColor(GameObject cardSquare)
@@ -267,10 +267,10 @@ namespace ModdingUtils.Utils
             return orig;
         }
 
-        public static void SilentAddToCardBar(int teamID, CardInfo card, string twoLetterCode = "")
+        public static void SilentAddToCardBar(int playerID, CardInfo card, string twoLetterCode = "")
         {
-            Traverse.Create(instance.PlayersCardBar(teamID)).Field("ci").SetValue(card);
-            GameObject source = (GameObject)Traverse.Create(instance.PlayersCardBar(teamID)).Field("source").GetValue();
+            Traverse.Create(instance.PlayersCardBar(playerID)).Field("ci").SetValue(card);
+            GameObject source = (GameObject)Traverse.Create(instance.PlayersCardBar(playerID)).Field("source").GetValue();
             GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(source, source.transform.position, source.transform.rotation, source.transform.parent);
             gameObject.transform.localScale = Vector3.one;
             string text = card.cardName;
@@ -296,7 +296,7 @@ namespace ModdingUtils.Utils
         }
         public static void SilentAddToCardBar(Player player, CardInfo card, string twoLetterCode = "")
         {
-            SilentAddToCardBar(player.teamID, card, twoLetterCode);
+            SilentAddToCardBar(player.playerID, card, twoLetterCode);
         }
 
         internal System.Collections.IEnumerator EndPickPhaseShow()
@@ -315,7 +315,7 @@ namespace ModdingUtils.Utils
 
                 if (cardsToShow[player].Count > 0)
                 {
-                    orig = HighlightCardBar(player.teamID);
+                    orig = HighlightCardBar(player.playerID);
                 }
                 foreach (CardInfo card in cardsToShow[player].Where(card => player.data.currentCards.Select(card => card.name).Contains(card.name)))
                 {
@@ -326,25 +326,25 @@ namespace ModdingUtils.Utils
                 }
                 if (cardsToShow[player].Count > 0)
                 {
-                    UnhighlightCardBar(player.teamID, orig);
+                    UnhighlightCardBar(player.playerID, orig);
                 }
             }
             Reset();
             yield break;
         }
-        public System.Collections.IEnumerator ShowImmediate(int teamID, int cardID, float? duration = null)
+        public System.Collections.IEnumerator ShowImmediate(int playerID, int cardID, float? duration = null)
         {
             float displayDuration = duration ?? CardBarUtils.displayDuration;
 
-            Color orig = HighlightCardBar(teamID);
+            Color orig = HighlightCardBar(playerID);
 
 
-            ShowCard(teamID, cardID);
+            ShowCard(playerID, cardID);
             yield return new WaitForSecondsRealtime(displayDuration);
-            HideCard(teamID);
+            HideCard(playerID);
 
 
-            UnhighlightCardBar(teamID, orig);
+            UnhighlightCardBar(playerID, orig);
 
 
             yield break;
@@ -352,21 +352,21 @@ namespace ModdingUtils.Utils
 
         public System.Collections.IEnumerator ShowImmediate(Player player, int cardID, float? duration = null)
         {
-            return ShowImmediate(player.teamID, cardID, duration);
+            return ShowImmediate(player.playerID, cardID, duration);
         }
         public System.Collections.IEnumerator ShowImmediate(Player player, CardInfo card, float? duration = null)
         {
-            return ShowImmediate(player.teamID, Cards.instance.GetCardID(card), duration);
+            return ShowImmediate(player.playerID, Cards.instance.GetCardID(card), duration);
         }
-        public System.Collections.IEnumerator ShowImmediate(int teamID, CardInfo card, float? duration = null)
+        public System.Collections.IEnumerator ShowImmediate(int playerID, CardInfo card, float? duration = null)
         {
-            return ShowImmediate(teamID, Cards.instance.GetCardID(card), duration);
+            return ShowImmediate(playerID, Cards.instance.GetCardID(card), duration);
         }
         public System.Collections.IEnumerator ShowImmediate(Player player, int[] cardIDs, float? duration = null)
         {
-            return ShowImmediate(player.teamID, cardIDs, duration);
+            return ShowImmediate(player.playerID, cardIDs, duration);
         }
-        public System.Collections.IEnumerator ShowImmediate(int teamID, CardInfo[] cards, float? duration = null)
+        public System.Collections.IEnumerator ShowImmediate(int playerID, CardInfo[] cards, float? duration = null)
         {
             List<int> cardIDs = new List<int>();
             foreach (CardInfo card in cards)
@@ -374,7 +374,7 @@ namespace ModdingUtils.Utils
                 cardIDs.Add(Cards.instance.GetCardID(card));
             }
 
-            return ShowImmediate(teamID, cardIDs.ToArray(), duration);
+            return ShowImmediate(playerID, cardIDs.ToArray(), duration);
         }
         public System.Collections.IEnumerator ShowImmediate(Player player, CardInfo[] cards, float? duration = null)
         {
@@ -384,7 +384,7 @@ namespace ModdingUtils.Utils
                 cardIDs.Add(Cards.instance.GetCardID(card));
             }
 
-            return ShowImmediate(player.teamID, cardIDs.ToArray(), duration);
+            return ShowImmediate(player.playerID, cardIDs.ToArray(), duration);
         }
         public System.Collections.IEnumerator ShowImmediate(Player player, int cardID)
         {
@@ -394,36 +394,36 @@ namespace ModdingUtils.Utils
         {
             return ShowImmediate(player, card, null);
         }
-        public System.Collections.IEnumerator ShowImmediate(int teamID, CardInfo card)
+        public System.Collections.IEnumerator ShowImmediate(int playerID, CardInfo card)
         {
-            return ShowImmediate(teamID, card, null);
+            return ShowImmediate(playerID, card, null);
         }
         public System.Collections.IEnumerator ShowImmediate(Player player, int[] cardIDs)
         {
             return ShowImmediate(player, cardIDs, null);
         }
-        public System.Collections.IEnumerator ShowImmediate(int teamID, CardInfo[] cards)
+        public System.Collections.IEnumerator ShowImmediate(int playerID, CardInfo[] cards)
         {
-            return ShowImmediate(teamID, cards, null);
+            return ShowImmediate(playerID, cards, null);
         }
         public System.Collections.IEnumerator ShowImmediate(Player player, CardInfo[] cards)
         {
             return ShowImmediate(player, cards, null);
         }
-        public System.Collections.IEnumerator ShowImmediate(int teamID, int[] cardIDs, float? duration = null)
+        public System.Collections.IEnumerator ShowImmediate(int playerID, int[] cardIDs, float? duration = null)
         {
             float displayDuration = duration ?? CardBarUtils.displayDuration;
 
-            Color orig = HighlightCardBar(teamID);
+            Color orig = HighlightCardBar(playerID);
 
             foreach (int cardID in cardIDs)
             {
-                ShowCard(teamID, cardID);
+                ShowCard(playerID, cardID);
                 yield return new WaitForSecondsRealtime(displayDuration);
-                HideCard(teamID);
+                HideCard(playerID);
             }
 
-            UnhighlightCardBar(teamID, orig);
+            UnhighlightCardBar(playerID, orig);
 
 
             yield break;
@@ -448,7 +448,7 @@ namespace ModdingUtils.Utils
             BindingFlags.Instance | BindingFlags.InvokeMethod |
             BindingFlags.NonPublic, null, PlayerManager.instance, new object[] { actorID });
 
-            instance.PlayersCardBar(playerToReset.teamID).ClearBar();
+            instance.PlayersCardBar(playerToReset.playerID).ClearBar();
         }
     }
     public class DictionaryOfLists<TKey, TListValue> : Dictionary<TKey, List<TListValue>>

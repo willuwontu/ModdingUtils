@@ -792,7 +792,7 @@ namespace ModdingUtils.Utils
             BindingFlags.Instance | BindingFlags.InvokeMethod |
             BindingFlags.NonPublic, null, PlayerManager.instance, new object[] { actorID });
 
-            cardBars[playerToReset.teamID].ClearBar();
+            cardBars[playerToReset.playerID].ClearBar();
 
         }
         public enum SelectionType
@@ -1066,13 +1066,13 @@ namespace ModdingUtils.Utils
             return validCards.ToArray();
         }
 
-        public static void SilentAddToCardBar(int teamID, CardInfo card, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f)
+        public static void SilentAddToCardBar(int playerID, CardInfo card, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f)
         {
 
             CardBar[] cardBars = (CardBar[])Traverse.Create(CardBarHandler.instance).Field("cardBars").GetValue();
 
-            Traverse.Create(cardBars[teamID]).Field("ci").SetValue(card);
-            GameObject source = (GameObject)Traverse.Create(cardBars[teamID]).Field("source").GetValue();
+            Traverse.Create(cardBars[playerID]).Field("ci").SetValue(card);
+            GameObject source = (GameObject)Traverse.Create(cardBars[playerID]).Field("source").GetValue();
             GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(source, source.transform.position, source.transform.rotation, source.transform.parent);
             gameObject.transform.localScale = Vector3.one;
             string text = card.cardName;
