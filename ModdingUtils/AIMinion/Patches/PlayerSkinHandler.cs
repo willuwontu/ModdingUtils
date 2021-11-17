@@ -27,11 +27,11 @@ namespace ModdingUtils.AIMinion.Patches
 				GameObject gameObject;
 				if (___data.GetAdditionalData().isAIMinion)
                 {
-					gameObject = UnityEngine.GameObject.Instantiate<GameObject>(PlayerSkinBank.GetPlayerSkinColors(___data.GetAdditionalData().spawner.playerID).gameObject, __instance.transform.position, __instance.transform.rotation, __instance.transform);
+					gameObject = UnityEngine.GameObject.Instantiate<GameObject>(PlayerSkinBank.GetPlayerSkinColors(___data.GetAdditionalData().spawner.teamID).gameObject, __instance.transform.position, __instance.transform.rotation, __instance.transform);
 				}
 				else
                 {
-					gameObject = UnityEngine.GameObject.Instantiate<GameObject>(PlayerSkinBank.GetPlayerSkinColors(___data.player.playerID).gameObject, __instance.transform.position, __instance.transform.rotation, __instance.transform);
+					gameObject = UnityEngine.GameObject.Instantiate<GameObject>(PlayerSkinBank.GetPlayerSkinColors(___data.player.teamID).gameObject, __instance.transform.position, __instance.transform.rotation, __instance.transform);
 				}
 
 				___skins = gameObject.GetComponentsInChildren<PlayerSkinParticle>();

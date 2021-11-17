@@ -16,7 +16,7 @@ namespace ModdingUtils.AIMinion.Patches
 
             if (__instance.GetComponent<Player>().data.GetAdditionalData().isAIMinion && __instance.GetComponent<Player>().data.GetAdditionalData().spawner != null)
             {
-                __instance.holdable.SetTeamColors(PlayerSkinBank.GetPlayerSkinColors(__instance.GetComponent<Player>().data.GetAdditionalData().spawner.playerID), __instance.GetComponent<Player>());
+                __instance.holdable.SetTeamColors(PlayerSkinBank.GetPlayerSkinColors(__instance.GetComponent<Player>().data.GetAdditionalData().spawner.teamID), __instance.GetComponent<Player>());
                 return false;
             }
             return true;

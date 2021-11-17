@@ -226,7 +226,7 @@ namespace ModdingUtils.AIMinion
         private readonly static float groundOffset = 1f;
         private readonly static float maxDistanceAway = 10f;
         private readonly static int maxAttempts = 1000;
-        private static LayerMask groundMask = (LayerMask)LayerMask.GetMask(new string[] { "Default" });
+        private static readonly LayerMask groundMask = (LayerMask)LayerMask.GetMask(new string[] { "Default", "IgnorePlayer" });
         private static Vector3 WorldToScreenPos(Vector3 pos)
         {
             Vector3 screenpos = MainCam.instance.transform.GetComponent<Camera>().WorldToScreenPoint(new Vector3(pos.x, pos.y, 0f));
@@ -252,7 +252,21 @@ namespace ModdingUtils.AIMinion
         private static bool IsValidPosition(Vector2 position)
         {
             RaycastHit2D raycastHit2D = Physics2D.Raycast(position, Vector2.down, range);
-            return raycastHit2D.transform && raycastHit2D.distance > 0.1f;
+            if (raycastHit2D.transform && raycastHit2D.distance > 0.1f)
+            {
+                if (raycastHit2D.collider && raycastHit2D.collider.GetComponent<DamageBox>() != null)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                return false;
+            }
         }
         private static Vector2 GetNearbyValidPosition(Vector2 position)
         {

@@ -31,7 +31,7 @@ namespace ModdingUtils.AIMinion.Patches
 
             if (requestedPlayer.data.GetAdditionalData().isAIMinion && requestedPlayer.data.GetAdditionalData().spawner != null)
             {
-                team = requestedPlayer.data.GetAdditionalData().spawner.playerID;
+                team = requestedPlayer.data.GetAdditionalData().spawner.teamID;
             }
 
         }
@@ -56,7 +56,7 @@ namespace ModdingUtils.AIMinion.Patches
 
             if (requestedPlayer.data.GetAdditionalData().isAIMinion && requestedPlayer.data.GetAdditionalData().spawner != null)
             {
-                team = requestedPlayer.data.GetAdditionalData().spawner.playerID;
+                team = requestedPlayer.data.GetAdditionalData().spawner.teamID;
             }
         }
     }
