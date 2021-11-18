@@ -55,6 +55,19 @@ namespace ModdingUtils
             GameModeManager.AddHook(GameModeHooks.HookPointStart, TimeSinceBattleStart.FreezeTimer);
             GameModeManager.AddHook(GameModeHooks.HookGameStart, (gm) => AIMinionHandler.SetPlayersCanJoin(false));
             GameModeManager.AddHook(GameModeHooks.HookInitStart, (gm) => AIMinionHandler.SetPlayersCanJoin(true));
+
+            // HookedEffect Stuff
+            GameModeManager.AddHook(GameModeHooks.HookGameStart, HookedEffectManager.GameStart);
+            GameModeManager.AddHook(GameModeHooks.HookGameEnd, HookedEffectManager.GameEnd);
+            GameModeManager.AddHook(GameModeHooks.HookRoundStart, HookedEffectManager.RoundStart);
+            GameModeManager.AddHook(GameModeHooks.HookRoundEnd, HookedEffectManager.RoundEnd);
+            GameModeManager.AddHook(GameModeHooks.HookPointStart, HookedEffectManager.PointStart);
+            GameModeManager.AddHook(GameModeHooks.HookBattleStart, HookedEffectManager.BattleStart);
+            GameModeManager.AddHook(GameModeHooks.HookPointEnd, HookedEffectManager.PointEnd);
+            GameModeManager.AddHook(GameModeHooks.HookPickStart, HookedEffectManager.PickStart);
+            GameModeManager.AddHook(GameModeHooks.HookPickEnd, HookedEffectManager.PickEnd);
+            GameModeManager.AddHook(GameModeHooks.HookPlayerPickStart, HookedEffectManager.PlayerPickStart);
+            GameModeManager.AddHook(GameModeHooks.HookPlayerPickEnd, HookedEffectManager.PlayerPickEnd);
         }
 
         private IEnumerator EndPickPhaseShow()
