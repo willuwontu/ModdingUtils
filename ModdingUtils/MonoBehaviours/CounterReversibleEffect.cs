@@ -1,4 +1,5 @@
 ﻿using ModdingUtils.Extensions;
+using ModdingUtils.Utils;
 
 namespace ModdingUtils.MonoBehaviours
 {
@@ -74,7 +75,7 @@ namespace ModdingUtils.MonoBehaviours
         public override void OnUpdate()
         {
             // reset if the player is not alive / active
-            if (!PlayerStatus.PlayerAliveAndSimulated(player))
+            if (!Utils.PlayerStatus.PlayerAliveAndSimulated(player))
             {
                 Reset();
                 ClearModifiers();

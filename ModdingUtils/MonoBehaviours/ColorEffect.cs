@@ -65,6 +65,17 @@ namespace ModdingUtils.MonoBehaviours
 		}
 		public void ApplyColor()
 		{
+			if (player.gameObject.GetComponentInChildren<PlayerSkinHandler>().simpleSkin)
+			{
+				SpriteMask[] sprites = player.gameObject.GetComponentInChildren<SetPlayerSpriteLayer>().transform.root.GetComponentsInChildren<SpriteMask>();
+				for (int i = 0; i < sprites.Length; i++)
+                {
+					sprites[i].GetComponent<SpriteRenderer>().color = colorMaxToSet;
+                }
+
+				return;
+			}
+
 			PlayerSkinParticle[] componentsInChildren2 = player.gameObject.GetComponentsInChildren<PlayerSkinParticle>();
 			for (int j = 0; j < componentsInChildren2.Length; j++)
 			{

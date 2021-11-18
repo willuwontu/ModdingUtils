@@ -26,7 +26,7 @@ namespace ModdingUtils.Extensions
             data.maxHealth += characterDataModifier.maxHealth_delta;
 
             // update player stuff
-            if (characterDataModifier.maxHealth_delta != 0f || characterDataModifier.maxHealth_delta != 0f)
+            if (characterDataModifier.health_delta != 0f || characterDataModifier.maxHealth_delta != 0f)
             {
                 typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
                     BindingFlags.Instance | BindingFlags.InvokeMethod |
@@ -44,7 +44,7 @@ namespace ModdingUtils.Extensions
             data.maxHealth += maxHealth_delta;
 
             // update player stuff
-            if (this.maxHealth_delta != 0f || this.maxHealth_delta != 0f)
+            if (this.health_delta != 0f || this.maxHealth_delta != 0f)
             {
                 typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
                     BindingFlags.Instance | BindingFlags.InvokeMethod |
@@ -59,7 +59,7 @@ namespace ModdingUtils.Extensions
             data.maxHealth -= characterDataModifier.maxHealth_delta;
 
             // update player stuff
-            if (characterDataModifier.maxHealth_delta != 0f || characterDataModifier.maxHealth_delta != 0f)
+            if (characterDataModifier.health_delta != 0f || characterDataModifier.maxHealth_delta != 0f)
             {
                 typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
                     BindingFlags.Instance | BindingFlags.InvokeMethod |
@@ -82,7 +82,7 @@ namespace ModdingUtils.Extensions
             data.maxHealth -= maxHealth_delta;
 
             // update player stuff
-            if (this.maxHealth_delta != 0f || this.maxHealth_delta != 0f)
+            if (this.health_delta != 0f || this.maxHealth_delta != 0f)
             {
                 typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
                     BindingFlags.Instance | BindingFlags.InvokeMethod |

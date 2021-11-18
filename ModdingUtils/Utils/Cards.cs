@@ -18,6 +18,32 @@ namespace ModdingUtils.Utils
 {
     public sealed class Cards
     {
+        public static List<CardInfo> active
+        {
+            get
+            {
+                return ((ObservableCollection<CardInfo>)typeof(CardManager).GetField("activeCards", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null)).ToList();
+
+            }
+            set { }
+        }
+        public static List<CardInfo> inactive
+        {
+            get
+            {
+                return (List<CardInfo>)typeof(CardManager).GetField("inactiveCards", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null);
+            }
+            set { }
+        }
+        public static List<CardInfo> all
+        {
+            get
+            {
+                return active.Concat(inactive).ToList();
+            }
+            set { }
+        }
+
         // singleton design, so that the RNG isn't reset each call
         public static readonly Cards instance = new Cards();
         private static readonly System.Random rng = new System.Random();
@@ -444,6 +470,10 @@ namespace ModdingUtils.Utils
                     }
                     catch (NotImplementedException)
                     { }
+                    catch (Exception exception)
+                    {
+                        UnityEngine.Debug.LogError("[ModdingUtils] EXCEPTION: " + exception.GetType().ToString() + "\nThrown by: " + card.GetComponent<CustomCard>().GetModName() + " - " + card.cardName + " - " + "OnRemoveCard(Player, Gun, GunAmmo, HealthHandler, Gravity, Block, CharacterStatModifiers)");
+                    }
                 }
             }
 
@@ -762,7 +792,7 @@ namespace ModdingUtils.Utils
             BindingFlags.Instance | BindingFlags.InvokeMethod |
             BindingFlags.NonPublic, null, PlayerManager.instance, new object[] { actorID });
 
-            cardBars[playerToReset.teamID].ClearBar();
+            cardBars[playerToReset.playerID].ClearBar();
 
         }
         public enum SelectionType
@@ -1036,13 +1066,13 @@ namespace ModdingUtils.Utils
             return validCards.ToArray();
         }
 
-        public static void SilentAddToCardBar(int teamID, CardInfo card, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f)
+        public static void SilentAddToCardBar(int playerID, CardInfo card, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f)
         {
 
             CardBar[] cardBars = (CardBar[])Traverse.Create(CardBarHandler.instance).Field("cardBars").GetValue();
 
-            Traverse.Create(cardBars[teamID]).Field("ci").SetValue(card);
-            GameObject source = (GameObject)Traverse.Create(cardBars[teamID]).Field("source").GetValue();
+            Traverse.Create(cardBars[playerID]).Field("ci").SetValue(card);
+            GameObject source = (GameObject)Traverse.Create(cardBars[playerID]).Field("source").GetValue();
             GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(source, source.transform.position, source.transform.rotation, source.transform.parent);
             gameObject.transform.localScale = Vector3.one;
             string text = card.cardName;
