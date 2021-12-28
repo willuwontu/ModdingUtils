@@ -1,10 +1,10 @@
 {
     "name": "ModdingUtils",
-    "version_number": "0.2.4",
+    "version_number": "0.2.5",
     "website_url": "https://github.com/pdcook/ModdingUtils",
     "description": "Utilities aimed at making modding easier and more accessible",
     "dependencies": [
-        "willis81808-UnboundLib-2.7.6",
+        "willis81808-UnboundLib-2.9.0",
 	"willis81808-MMHook-1.0.0",
 	"BepInEx-BepInExPack_ROUNDS-5.4.1100"
     ]
