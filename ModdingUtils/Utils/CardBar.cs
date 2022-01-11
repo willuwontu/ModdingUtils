@@ -437,17 +437,14 @@ namespace ModdingUtils.Utils
             }
             else if (PhotonNetwork.IsMasterClient)
             {
-                NetworkingManager.RPC(typeof(CardBarUtils), "RPCA_ClearCardBar", new object[] { player.data.view.ControllerActorNr });
+                NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_ClearCardBar), new object[] { player.playerID });
             }
         }
 
         [UnboundRPC]
-        private static void RPCA_ClearCardBar(int actorID)
+        private static void RPCA_ClearCardBar(int playerID)
         {
-            Player playerToReset = (Player)typeof(PlayerManager).InvokeMember("GetPlayerWithActorID",
-            BindingFlags.Instance | BindingFlags.InvokeMethod |
-            BindingFlags.NonPublic, null, PlayerManager.instance, new object[] { actorID });
-
+            Player playerToReset = (Player)PlayerManager.instance.InvokeMethod("GetPlayerWithID", playerID);
             instance.PlayersCardBar(playerToReset.playerID).ClearBar();
         }
     }
