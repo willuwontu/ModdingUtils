@@ -155,6 +155,8 @@ namespace ModdingUtils.MonoBehaviours
                 Destroy(this);
             }
 
+            OnOnDisable();
+
         }
         public virtual void OnOnDisable()
         {
