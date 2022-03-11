@@ -147,7 +147,7 @@ namespace ModdingUtils.MonoBehaviours
         }
         public void OnDisable()
         {
-            
+
             livesEffected++;
 
             if (livesEffected >= livesToEffect)
