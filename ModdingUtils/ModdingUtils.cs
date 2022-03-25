@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using ModdingUtils.Extensions;
 using ModdingUtils.MonoBehaviours;
 using ModdingUtils.AIMinion;
+using ModdingUtils.GameModes;
 using On;
 
 // requires Assembly-CSharp.dll
@@ -33,6 +34,8 @@ namespace ModdingUtils
         {
             // register credits with unbound
             Unbound.RegisterCredits(ModName, new string[] { "Pykess", "BossSloth (Migration of several tools from PCE)" }, new string[] { "github", "Buy me a coffee" }, new string[] { "https://github.com/Rounds-Modding/ModdingUtils", "https://www.buymeacoffee.com/Pykess" });
+
+            gameObject.AddComponent<InterfaceGameModeHooksManager>();
 
             GameModeManager.AddHook(GameModeHooks.HookPickEnd, (gm) => EndPickPhaseShow());
 
