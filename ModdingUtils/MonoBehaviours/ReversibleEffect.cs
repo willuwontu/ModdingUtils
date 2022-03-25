@@ -52,14 +52,6 @@ namespace ModdingUtils.MonoBehaviours
 
         public void Awake()
         {
-            player = gameObject.GetComponentInParent<Player>();
-            gun = player.GetComponent<Holding>().holdable.GetComponent<Gun>();
-            data = player.GetComponent<CharacterData>();
-            health = player.GetComponent<HealthHandler>();
-            gravity = player.GetComponent<Gravity>();
-            block = player.GetComponent<Block>();
-            gunAmmo = gun.GetComponentInChildren<GunAmmo>();
-            characterStatModifiers = player.GetComponent<CharacterStatModifiers>();
             OnAwake();
         }
         public virtual void OnAwake()
@@ -83,6 +75,14 @@ namespace ModdingUtils.MonoBehaviours
 
         public void Start()
         {
+            player = gameObject.GetComponentInParent<Player>();
+            gun = player.GetComponent<Holding>().holdable.GetComponent<Gun>();
+            data = player.GetComponent<CharacterData>();
+            health = player.GetComponent<HealthHandler>();
+            gravity = player.GetComponent<Gravity>();
+            block = player.GetComponent<Block>();
+            gunAmmo = gun.GetComponentInChildren<GunAmmo>();
+            characterStatModifiers = player.GetComponent<CharacterStatModifiers>();
 
             wasActiveLastFrame = Utils.PlayerStatus.PlayerAliveAndSimulated(player);
 
