@@ -3,6 +3,12 @@
 
 This mod provides several utilities that were developed over time for specific mods that may be useful to the modding community at large.
 
+#### v3.0
+---------
+
+- Added interface for game mode hooks on monos (Willuwontu)
+- Added support for reversible effects on child gameobjects of the player
+
 #### v2.8
 ---------
 

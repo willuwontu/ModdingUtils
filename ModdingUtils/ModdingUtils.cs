@@ -22,7 +22,7 @@ using On;
 namespace ModdingUtils
 {
     [BepInDependency("com.willis.rounds.unbound", BepInDependency.DependencyFlags.HardDependency)] // necessary for most modding stuff here
-    [BepInPlugin(ModId, ModName, "0.2.8")]
+    [BepInPlugin(ModId, ModName, "0.3.0")]
     [BepInProcess("Rounds.exe")]
     public class ModdingUtils : BaseUnityPlugin
     {
@@ -33,7 +33,7 @@ namespace ModdingUtils
         private void Start()
         {
             // register credits with unbound
-            Unbound.RegisterCredits(ModName, new string[] { "Pykess", "BossSloth (Migration of several tools from PCE)" }, new string[] { "github", "Buy me a coffee" }, new string[] { "https://github.com/Rounds-Modding/ModdingUtils", "https://www.buymeacoffee.com/Pykess" });
+            Unbound.RegisterCredits(ModName, new string[] { "Pykess", "BossSloth (Migration of several tools from PCE)", "Willuwontu (game mode hooks interface)" }, new string[] { "github", "Support Pykess" }, new string[] { "https://github.com/Rounds-Modding/ModdingUtils", "https://ko-fi.com/pykess" });
 
             gameObject.AddComponent<InterfaceGameModeHooksManager>();
 
