@@ -34,6 +34,8 @@ namespace ModdingUtils
             // register credits with unbound
             Unbound.RegisterCredits(ModName, new string[] { "Pykess", "BossSloth (Migration of several tools from PCE)" }, new string[] { "github", "Buy me a coffee" }, new string[] { "https://github.com/Rounds-Modding/ModdingUtils", "https://www.buymeacoffee.com/Pykess" });
 
+            gameObject.AddComponent<InterfaceGameModeHooksManager>();
+
             GameModeManager.AddHook(GameModeHooks.HookPickEnd, (gm) => EndPickPhaseShow());
 
             // reset player blacklisted categories on game start
