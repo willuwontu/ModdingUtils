@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using ModdingUtils.Extensions;
 using ModdingUtils.MonoBehaviours;
 using ModdingUtils.AIMinion;
+using ModdingUtils.GameModes;
 using On;
 
 // requires Assembly-CSharp.dll
