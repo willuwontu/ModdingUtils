@@ -19,6 +19,7 @@
         }
         public override void OnUpdate()
         {
+            if (data?.playerActions?.Jump is null) { return; }
             // reset if the player is on the ground
             if (data.isGrounded)
             {

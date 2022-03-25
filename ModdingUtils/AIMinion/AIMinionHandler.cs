@@ -19,6 +19,7 @@ using ModdingUtils;
 using ModdingUtils.Extensions;
 using System;
 using System.Runtime.CompilerServices;
+using UnboundLib.Extensions;
 
 namespace ModdingUtils.AIMinion
 {
@@ -686,6 +687,7 @@ namespace ModdingUtils.AIMinion
             AIdata.player.AssignPlayerID(newID);
             PlayerAssigner.instance.players.Add(AIdata);
             AIdata.player.AssignTeamID(teamID);
+            AIdata.player.AssignColorID(spawner.colorID());
             
             if (activeNow)
             {

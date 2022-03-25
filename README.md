@@ -3,6 +3,25 @@
 
 This mod provides several utilities that were developed over time for specific mods that may be useful to the modding community at large.
 
+#### v2.8
+---------
+
+Added utilities for the out of bounds, agnostic of map embiggener
+
+#### v2.7
+---------
+
+Minor `ReversibleEffect` bugfix
+
+#### v2.6
+---------
+
+Bugfixes regarding multiple local players per client in online lobbies
+
+#### v2.5
+---------
+
+Various bugfixes to stay compatible with RWF and UnboundLib
 
 #### v2.4
 ---------

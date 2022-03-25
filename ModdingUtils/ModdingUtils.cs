@@ -21,7 +21,7 @@ using On;
 namespace ModdingUtils
 {
     [BepInDependency("com.willis.rounds.unbound", BepInDependency.DependencyFlags.HardDependency)] // necessary for most modding stuff here
-    [BepInPlugin(ModId, ModName, "0.2.4")]
+    [BepInPlugin(ModId, ModName, "0.2.8")]
     [BepInProcess("Rounds.exe")]
     public class ModdingUtils : BaseUnityPlugin
     {
@@ -46,7 +46,7 @@ namespace ModdingUtils
             GameModeManager.AddHook(GameModeHooks.HookPointEnd, (gm) => ResetTimers());
 
             // AIMinion stuff
-            GameModeManager.AddHook(GameModeHooks.HookInitEnd, AIMinionHandler.InitPlayerAssigner);
+            GameModeManager.AddHook(GameModeHooks.HookGameStart, AIMinionHandler.InitPlayerAssigner);
             GameModeManager.AddHook(GameModeHooks.HookBattleStart, AIMinionHandler.CreateAllAIs);
             GameModeManager.AddHook(GameModeHooks.HookPointEnd, AIMinionHandler.RemoveAllAIs);
             GameModeManager.AddHook(GameModeHooks.HookPickStart, AIMinionHandler.RemoveAllAIs);

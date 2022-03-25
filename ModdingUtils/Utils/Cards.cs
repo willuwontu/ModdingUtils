@@ -110,11 +110,11 @@ namespace ModdingUtils.Utils
 
                 if (addToCardBar)
                 {
-                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCard), new object[] { card.cardName, player.data.view.ControllerActorNr, player.playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
+                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCard), new object[] { card.cardName, player.playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
                 }
                 else
                 {
-                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCardWithoutCardBar), new object[] { card.cardName, player.data.view.ControllerActorNr, player.playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
+                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCardWithoutCardBar), new object[] { card.cardName, player.playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
                 }
 
             }
@@ -490,7 +490,7 @@ namespace ModdingUtils.Utils
             }
             else if (PhotonNetwork.IsMasterClient)
             {
-                NetworkingManager.RPC(typeof(Cards), "RPCA_FullReset", new object[] { player.data.view.ControllerActorNr });
+                NetworkingManager.RPC(typeof(Cards), "RPCA_FullReset", new object[] { player.playerID });
                 if (clearBar)
                 {
                     CardBarUtils.instance.ClearCardBar(player);
@@ -710,7 +710,7 @@ namespace ModdingUtils.Utils
             //return indecesToReplace.Count;
         }
         [UnboundRPC]
-        internal static void RPCA_AssignCard(string cardName, int actorID, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
+        internal static void RPCA_AssignCard(string cardName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
         {
             Player playerToUpgrade;
 
@@ -724,7 +724,7 @@ namespace ModdingUtils.Utils
                                 BindingFlags.NonPublic, null, cardStats, new object[] { });
             cardStats.GetComponent<CardInfo>().sourceCard = card;
 
-            playerToUpgrade = FindPlayer.GetPlayerWithActorAndPlayerIDs(actorID, playerID);
+            playerToUpgrade = (Player)PlayerManager.instance.InvokeMethod("GetPlayerWithID", playerID);
 
             Traverse.Create(cardStats).Field("playerToUpgrade").SetValue(playerToUpgrade);
 
@@ -742,7 +742,7 @@ namespace ModdingUtils.Utils
             
         }
         [UnboundRPC]
-        internal static void RPCA_AssignCardWithoutCardBar(string cardName, int actorID, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
+        internal static void RPCA_AssignCardWithoutCardBar(string cardName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
         {
             Player playerToUpgrade;
 
@@ -756,7 +756,7 @@ namespace ModdingUtils.Utils
                                 BindingFlags.NonPublic, null, cardStats, new object[] { });
             cardStats.GetComponent<CardInfo>().sourceCard = card;
 
-            playerToUpgrade = FindPlayer.GetPlayerWithActorAndPlayerIDs(actorID, playerID);
+            playerToUpgrade = (Player)PlayerManager.instance.InvokeMethod("GetPlayerWithID", playerID);
 
             Traverse.Create(cardStats).Field("playerToUpgrade").SetValue(playerToUpgrade);
 
@@ -773,11 +773,9 @@ namespace ModdingUtils.Utils
             
         }
         [UnboundRPC]
-        public static void RPCA_FullReset(int actorID)
+        public static void RPCA_FullReset(int playerID)
         {
-            Player playerToReset = (Player)typeof(PlayerManager).InvokeMember("GetPlayerWithActorID",
-                    BindingFlags.Instance | BindingFlags.InvokeMethod |
-                    BindingFlags.NonPublic, null, PlayerManager.instance, new object[] { actorID });
+            Player playerToReset = (Player)PlayerManager.instance.InvokeMethod("GetPlayerWithID", playerID);
 
             // remove all the cards from the player by calling the PATCHED FullReset
             typeof(Player).InvokeMember("FullReset",
@@ -785,12 +783,10 @@ namespace ModdingUtils.Utils
                     BindingFlags.NonPublic, null, playerToReset, new object[] { });
         }
         [UnboundRPC]
-        public static void RPCA_ClearCardBar(int actorID)
+        public static void RPCA_ClearCardBar(int playerID)
         {
             CardBar[] cardBars = (CardBar[])Traverse.Create(CardBarHandler.instance).Field("cardBars").GetValue();
-            Player playerToReset = (Player)typeof(PlayerManager).InvokeMember("GetPlayerWithActorID",
-            BindingFlags.Instance | BindingFlags.InvokeMethod |
-            BindingFlags.NonPublic, null, PlayerManager.instance, new object[] { actorID });
+            Player playerToReset = (Player)PlayerManager.instance.InvokeMethod("GetPlayerWithID", playerID);
 
             cardBars[playerToReset.playerID].ClearBar();
 
