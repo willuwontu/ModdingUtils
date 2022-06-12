@@ -68,10 +68,6 @@ namespace ModdingUtils.Utils
             removalCallbacks.Add(callback);
         }
 
-        public void AddCardToPlayer(Player player, CardInfo card, bool reassign = false, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f)
-        {
-            AddCardToPlayer(player, card, reassign, twoLetterCode, forceDisplay, forceDisplayDelay, true);
-        }
         public void AddCardToPlayer(Player player, CardInfo card, bool reassign = false, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f, bool addToCardBar = true)
         {
             // adds the card "card" to the player "player"
@@ -88,6 +84,28 @@ namespace ModdingUtils.Utils
                 cardStats.GetComponent<CardInfo>().sourceCard = card;
 
                 Traverse.Create(cardStats).Field("playerToUpgrade").SetValue(player);
+
+                if (reassign && card.GetComponent<CustomCard>() != null)
+                {
+                    try
+                    {
+
+                        Gun gun = player.GetComponent<Holding>().holdable.GetComponent<Gun>();
+                        CharacterData characterData = player.GetComponent<CharacterData>();
+                        HealthHandler healthHandler = player.GetComponent<HealthHandler>();
+                        Gravity gravity = player.GetComponent<Gravity>();
+                        Block block = player.GetComponent<Block>();
+                        GunAmmo gunAmmo = gun.GetComponentInChildren<GunAmmo>();
+                        CharacterStatModifiers characterStatModifiers = player.GetComponent<CharacterStatModifiers>();
+                        card.GetComponent<CustomCard>().OnReassignCard(player, gun, gunAmmo, characterData, healthHandler, gravity, block, characterStatModifiers);
+                    }
+                    catch (NotImplementedException)
+                    { }
+                    catch (Exception exception)
+                    {
+                        UnityEngine.Debug.LogError("[ModdingUtils] EXCEPTION: " + exception.GetType().ToString() + "\nThrown by: " + card.GetComponent<CustomCard>().GetModName() + " - " + card.cardName + " - " + "OnReassignCard(Player, Gun, GunAmmo, HealthHandler, Gravity, Block, CharacterStatModifiers)");
+                    }
+                }
 
                 if (!reassign || card.GetAdditionalData().canBeReassigned)
                 {
@@ -119,10 +137,6 @@ namespace ModdingUtils.Utils
 
             }
         }
-        public void AddCardsToPlayer(Player player, CardInfo[] cards, bool reassign = false, string[] twoLetterCodes = null, float[] forceDisplays = null, float[] forceDisplayDelays = null)
-        {
-            AddCardsToPlayer(player, cards, reassign, twoLetterCodes, forceDisplays, forceDisplayDelays, true);
-        }
         public void AddCardsToPlayer(Player player, CardInfo[] cards, bool reassign = false, string[] twoLetterCodes = null, float[] forceDisplays = null, float[] forceDisplayDelays = null, bool addToCardBar = true)
         {
             bool[] reassigns = new bool[cards.Length];
@@ -132,10 +146,6 @@ namespace ModdingUtils.Utils
             }
 
             AddCardsToPlayer(player, cards, reassigns, twoLetterCodes, forceDisplays, forceDisplayDelays, addToCardBar);
-        }
-        public void AddCardsToPlayer(Player player, CardInfo[] cards, bool[] reassigns = null, string[] twoLetterCodes = null, float[] forceDisplays = null, float[] forceDisplayDelays = null)
-        {
-            AddCardsToPlayer(player, cards, reassigns, twoLetterCodes, forceDisplays, forceDisplayDelays, true);
         }
         public void AddCardsToPlayer(Player player, CardInfo[] cards, bool[] reassigns = null, string[] twoLetterCodes = null, float[] forceDisplays = null, float[] forceDisplayDelays = null, bool addToCardBar = true)
         {
@@ -176,10 +186,6 @@ namespace ModdingUtils.Utils
             {
                 AddCardToPlayer(player, cards[i], reassigns[i], twoLetterCodes[i], forceDisplays[i], forceDisplayDelays[i], addToCardBar);
             }
-        }
-        public CardInfo[] RemoveCardsFromPlayer(Player player, int[] indeces)
-        {
-            return RemoveCardsFromPlayer(player, indeces, true);
         }
         public CardInfo[] RemoveCardsFromPlayer(Player player, int[] indeces, bool editCardBar = true)
         {
@@ -225,10 +231,6 @@ namespace ModdingUtils.Utils
 
             // return the cards that were removed
             return originalCards.Except(newCards).ToArray();
-        }
-        public int RemoveCardsFromPlayer(Player player, CardInfo[] cards, SelectionType selectType = SelectionType.All)
-        {
-            return RemoveCardsFromPlayer(player, cards, selectType, true);
         }
         public int RemoveCardsFromPlayer(Player player, CardInfo[] cards, SelectionType selectType = SelectionType.All, bool editCardBar = true)
         {
@@ -314,11 +316,7 @@ namespace ModdingUtils.Utils
             // return the number of cards removed
             return indecesToRemove.Count;
         }
-        public CardInfo RemoveCardFromPlayer(Player player, int idx)
-        {
-            return RemoveCardFromPlayer(player, idx, true);
-        }
-        public CardInfo RemoveCardFromPlayer(Player player, int idx, bool editCardBar)
+        public CardInfo RemoveCardFromPlayer(Player player, int idx, bool editCardBar = true)
         {
             // copy player's currentCards list
             List<CardInfo> originalCards = new List<CardInfo>();
@@ -359,10 +357,6 @@ namespace ModdingUtils.Utils
 
             // return the card that was removed
             return originalCards[idx];
-        }
-        public int RemoveCardFromPlayer(Player player, CardInfo card, SelectionType selectType = SelectionType.All)
-        {
-            return RemoveCardFromPlayer(player, card, selectType, true);
         }
         public int RemoveCardFromPlayer(Player player, CardInfo card, SelectionType selectType = SelectionType.All, bool editCardBar = true)
         {
@@ -500,10 +494,6 @@ namespace ModdingUtils.Utils
             return cards.ToArray(); // return the removed cards
 
         }
-        public System.Collections.IEnumerator ReplaceCard(Player player, int idx, CardInfo newCard, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f)
-        {
-            yield return ReplaceCard(player, idx, newCard, twoLetterCode, forceDisplay, forceDisplayDelay, true);
-        }
         public System.Collections.IEnumerator ReplaceCard(Player player, int idx, CardInfo newCard, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f, bool editCardBar = true)
         {
             if (newCard == null)
@@ -513,6 +503,7 @@ namespace ModdingUtils.Utils
             List<string> twoLetterCodes = new List<string>();
             List<float> forceDisplays = new List<float>();
             List<float> forceDisplayDelays = new List<float>();
+            List<bool> reassigns = new List<bool>();
 
             // copy player's currentCards list
             List<CardInfo> originalCards = new List<CardInfo>();
@@ -531,6 +522,7 @@ namespace ModdingUtils.Utils
                     twoLetterCodes.Add("");
                     forceDisplays.Add(0f);
                     forceDisplayDelays.Add(0f);
+                    reassigns.Add(true);
                 }
                 else
                 {
@@ -538,6 +530,7 @@ namespace ModdingUtils.Utils
                     twoLetterCodes.Add(twoLetterCode);
                     forceDisplays.Add(forceDisplay);
                     forceDisplayDelays.Add(forceDisplayDelay);
+                    reassigns.Add(false);
                 }
             }
 
@@ -551,15 +544,11 @@ namespace ModdingUtils.Utils
                 CardBarUtils.instance.ClearCardBar(player);
             }
             // then add back the new card
-            AddCardsToPlayer(player, newCards.ToArray(), true, twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray(), editCardBar);
+            AddCardsToPlayer(player, newCards.ToArray(), reassigns.ToArray(), twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray(), editCardBar);
 
             yield break;
             // return the card that was removed
             //return originalCards[idx];
-        }
-        public System.Collections.IEnumerator ReplaceCards(Player player, int[] indeces, CardInfo[] newCards, string[] twoLetterCodes = null)
-        {
-            yield return ReplaceCards(player, indeces, newCards, twoLetterCodes, true);
         }
         public System.Collections.IEnumerator ReplaceCards(Player player, int[] indeces, CardInfo[] newCards, string[] twoLetterCodes = null, bool editCardBar = true)
         {
@@ -580,6 +569,7 @@ namespace ModdingUtils.Utils
 
             List<CardInfo> newCardsToAssign = new List<CardInfo>();
             List<string> twoLetterCodesToAssign = new List<string>();
+            List<bool> reassigns = new List<bool>();
 
             int j = 0;
             for (int i = 0; i < originalCards.Count; i++)
@@ -588,17 +578,20 @@ namespace ModdingUtils.Utils
                 {
                     newCardsToAssign.Add(originalCards[i]);
                     twoLetterCodesToAssign.Add("");
+                    reassigns.Add(true);
                 }
                 else if (newCards[j] == null)
                 {
                     newCardsToAssign.Add(originalCards[i]);
                     twoLetterCodesToAssign.Add("");
+                    reassigns.Add(true);
                     j++;
                 }
                 else
                 {
                     newCardsToAssign.Add(newCards[j]);
                     twoLetterCodesToAssign.Add(twoLetterCodes[j]);
+                    reassigns.Add(false);
                     j++;
                 }
             }
@@ -613,15 +606,11 @@ namespace ModdingUtils.Utils
                 CardBarUtils.instance.ClearCardBar(player);
             }
             // then add back the new cards
-            AddCardsToPlayer(player, newCardsToAssign.ToArray(), true, twoLetterCodesToAssign.ToArray(), addToCardBar: editCardBar);
+            AddCardsToPlayer(player, newCardsToAssign.ToArray(), reassigns.ToArray(), twoLetterCodesToAssign.ToArray(), addToCardBar: editCardBar);
 
             yield break;
             // return the card that was removed
             //return originalCards[idx];
-        }
-        public System.Collections.IEnumerator ReplaceCard(Player player, CardInfo cardToReplace, CardInfo newCard, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f, SelectionType selectType = SelectionType.All)
-        {
-            yield return ReplaceCard(player, cardToReplace, newCard, twoLetterCode, forceDisplay, forceDisplayDelay, selectType, true);
         }
         public System.Collections.IEnumerator ReplaceCard(Player player, CardInfo cardToReplace, CardInfo newCard, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f, SelectionType selectType = SelectionType.All, bool editCardBar = true)
         {
@@ -632,6 +621,7 @@ namespace ModdingUtils.Utils
             List<string> twoLetterCodes = new List<string>();
             List<float> forceDisplays = new List<float>();
             List<float> forceDisplayDelays = new List<float>();
+            List<bool> reassigns = new List<bool>();
 
             // copy player's currentCards list
             List<CardInfo> originalCards = new List<CardInfo>();
@@ -682,6 +672,7 @@ namespace ModdingUtils.Utils
                     twoLetterCodes.Add("");
                     forceDisplays.Add(0f);
                     forceDisplayDelays.Add(0f);
+                    reassigns.Add(true);
                 }
                 else
                 {
@@ -689,6 +680,7 @@ namespace ModdingUtils.Utils
                     twoLetterCodes.Add(twoLetterCode);
                     forceDisplays.Add(forceDisplay);
                     forceDisplayDelays.Add(forceDisplayDelay);
+                    reassigns.Add(false);
                 }
             }
 
@@ -701,7 +693,7 @@ namespace ModdingUtils.Utils
 
             if (editCardBar) { CardBarUtils.instance.ClearCardBar(player); }
             // then add back the new card
-            AddCardsToPlayer(player, newCards.ToArray(), true, twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray(), editCardBar);
+            AddCardsToPlayer(player, newCards.ToArray(), reassigns.ToArray(), twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray(), editCardBar);
             //});
 
             yield break;
@@ -710,7 +702,7 @@ namespace ModdingUtils.Utils
             //return indecesToReplace.Count;
         }
         [UnboundRPC]
-        internal static void RPCA_AssignCard(string cardName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
+        internal static void RPCA_AssignCard(string cardName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay, bool addToCardBar = true)
         {
             Player playerToUpgrade;
 
@@ -728,6 +720,28 @@ namespace ModdingUtils.Utils
 
             Traverse.Create(cardStats).Field("playerToUpgrade").SetValue(playerToUpgrade);
 
+            if (reassign && card.GetComponent<CustomCard>() != null)
+            {
+                try
+                {
+
+                    Gun gun = playerToUpgrade.GetComponent<Holding>().holdable.GetComponent<Gun>();
+                    CharacterData characterData = playerToUpgrade.GetComponent<CharacterData>();
+                    HealthHandler healthHandler = playerToUpgrade.GetComponent<HealthHandler>();
+                    Gravity gravity = playerToUpgrade.GetComponent<Gravity>();
+                    Block block = playerToUpgrade.GetComponent<Block>();
+                    GunAmmo gunAmmo = gun.GetComponentInChildren<GunAmmo>();
+                    CharacterStatModifiers characterStatModifiers = playerToUpgrade.GetComponent<CharacterStatModifiers>();
+                    card.GetComponent<CustomCard>().OnReassignCard(playerToUpgrade, gun, gunAmmo, characterData, healthHandler, gravity, block, characterStatModifiers);
+                }
+                catch (NotImplementedException)
+                { }
+                catch (Exception exception)
+                {
+                    UnityEngine.Debug.LogError("[ModdingUtils] EXCEPTION: " + exception.GetType().ToString() + "\nThrown by: " + card.GetComponent<CustomCard>().GetModName() + " - " + card.cardName + " - " + "OnReassignCard(Player, Gun, GunAmmo, HealthHandler, Gravity, Block, CharacterStatModifiers)");
+                }
+            }
+
             if (!reassign || card.GetAdditionalData().canBeReassigned)
             {
                 typeof(ApplyCardStats).InvokeMember("ApplyStats",
@@ -738,39 +752,16 @@ namespace ModdingUtils.Utils
             {
                 playerToUpgrade.data.currentCards.Add(card);
             }
-            SilentAddToCardBar(playerToUpgrade.playerID, cardStats.GetComponent<CardInfo>().sourceCard, twoLetterCode, forceDisplay, forceDisplayDelay);
+            if (addToCardBar)
+            {
+                SilentAddToCardBar(playerToUpgrade.playerID, cardStats.GetComponent<CardInfo>().sourceCard, twoLetterCode, forceDisplay, forceDisplayDelay);
+            }
             
         }
         [UnboundRPC]
         internal static void RPCA_AssignCardWithoutCardBar(string cardName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
         {
-            Player playerToUpgrade;
-
-            CardInfo card = Cards.instance.GetCardWithName(cardName);
-
-            ApplyCardStats cardStats = card.gameObject.GetComponentInChildren<ApplyCardStats>();
-
-            // call Start to initialize card stat components for base-game cards
-            typeof(ApplyCardStats).InvokeMember("Start",
-                                BindingFlags.Instance | BindingFlags.InvokeMethod |
-                                BindingFlags.NonPublic, null, cardStats, new object[] { });
-            cardStats.GetComponent<CardInfo>().sourceCard = card;
-
-            playerToUpgrade = (Player)PlayerManager.instance.InvokeMethod("GetPlayerWithID", playerID);
-
-            Traverse.Create(cardStats).Field("playerToUpgrade").SetValue(playerToUpgrade);
-
-            if (!reassign || card.GetAdditionalData().canBeReassigned)
-            {
-                typeof(ApplyCardStats).InvokeMember("ApplyStats",
-                                    BindingFlags.Instance | BindingFlags.InvokeMethod |
-                                    BindingFlags.NonPublic, null, cardStats, new object[] { });
-            }
-            else
-            {
-                playerToUpgrade.data.currentCards.Add(card);
-            }
-            
+            RPCA_AssignCard(cardName, playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay, false);
         }
         [UnboundRPC]
         public static void RPCA_FullReset(int playerID)
