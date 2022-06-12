@@ -68,6 +68,10 @@ namespace ModdingUtils.Utils
             removalCallbacks.Add(callback);
         }
 
+        public void AddCardToPlayer(Player player, CardInfo card, bool reassign = false, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f)
+        {
+            AddCardToPlayer(player, card, reassign, twoLetterCode, forceDisplay, forceDisplayDelay, true);
+        }
         public void AddCardToPlayer(Player player, CardInfo card, bool reassign = false, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f, bool addToCardBar = true)
         {
             // adds the card "card" to the player "player"
@@ -137,6 +141,10 @@ namespace ModdingUtils.Utils
 
             }
         }
+        public void AddCardsToPlayer(Player player, CardInfo[] cards, bool reassign = false, string[] twoLetterCodes = null, float[] forceDisplays = null, float[] forceDisplayDelays = null)
+        {
+            AddCardsToPlayer(player, cards, reassign, twoLetterCodes, forceDisplays, forceDisplayDelays, true);
+        }
         public void AddCardsToPlayer(Player player, CardInfo[] cards, bool reassign = false, string[] twoLetterCodes = null, float[] forceDisplays = null, float[] forceDisplayDelays = null, bool addToCardBar = true)
         {
             bool[] reassigns = new bool[cards.Length];
@@ -146,6 +154,10 @@ namespace ModdingUtils.Utils
             }
 
             AddCardsToPlayer(player, cards, reassigns, twoLetterCodes, forceDisplays, forceDisplayDelays, addToCardBar);
+        }
+        public void AddCardsToPlayer(Player player, CardInfo[] cards, bool[] reassigns = null, string[] twoLetterCodes = null, float[] forceDisplays = null, float[] forceDisplayDelays = null)
+        {
+            AddCardsToPlayer(player, cards, reassigns, twoLetterCodes, forceDisplays, forceDisplayDelays, true);
         }
         public void AddCardsToPlayer(Player player, CardInfo[] cards, bool[] reassigns = null, string[] twoLetterCodes = null, float[] forceDisplays = null, float[] forceDisplayDelays = null, bool addToCardBar = true)
         {
@@ -186,6 +198,10 @@ namespace ModdingUtils.Utils
             {
                 AddCardToPlayer(player, cards[i], reassigns[i], twoLetterCodes[i], forceDisplays[i], forceDisplayDelays[i], addToCardBar);
             }
+        }
+        public CardInfo[] RemoveCardsFromPlayer(Player player, int[] indeces)
+        {
+            return RemoveCardsFromPlayer(player, indeces, true);
         }
         public CardInfo[] RemoveCardsFromPlayer(Player player, int[] indeces, bool editCardBar = true)
         {
@@ -231,6 +247,10 @@ namespace ModdingUtils.Utils
 
             // return the cards that were removed
             return originalCards.Except(newCards).ToArray();
+        }
+        public int RemoveCardsFromPlayer(Player player, CardInfo[] cards, SelectionType selectType = SelectionType.All)
+        {
+            return RemoveCardsFromPlayer(player, cards, selectType, true);
         }
         public int RemoveCardsFromPlayer(Player player, CardInfo[] cards, SelectionType selectType = SelectionType.All, bool editCardBar = true)
         {
@@ -316,7 +336,11 @@ namespace ModdingUtils.Utils
             // return the number of cards removed
             return indecesToRemove.Count;
         }
-        public CardInfo RemoveCardFromPlayer(Player player, int idx, bool editCardBar = true)
+        public CardInfo RemoveCardFromPlayer(Player player, int idx)
+        {
+            return RemoveCardFromPlayer(player, idx, true);
+        }
+        public CardInfo RemoveCardFromPlayer(Player player, int idx, bool editCardBar)
         {
             // copy player's currentCards list
             List<CardInfo> originalCards = new List<CardInfo>();
@@ -357,6 +381,10 @@ namespace ModdingUtils.Utils
 
             // return the card that was removed
             return originalCards[idx];
+        }
+        public int RemoveCardFromPlayer(Player player, CardInfo card, SelectionType selectType = SelectionType.All)
+        {
+            return RemoveCardFromPlayer(player, card, selectType, true);
         }
         public int RemoveCardFromPlayer(Player player, CardInfo card, SelectionType selectType = SelectionType.All, bool editCardBar = true)
         {
@@ -494,6 +522,10 @@ namespace ModdingUtils.Utils
             return cards.ToArray(); // return the removed cards
 
         }
+        public System.Collections.IEnumerator ReplaceCard(Player player, int idx, CardInfo newCard, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f)
+        {
+            yield return ReplaceCard(player, idx, newCard, twoLetterCode, forceDisplay, forceDisplayDelay, true);
+        }
         public System.Collections.IEnumerator ReplaceCard(Player player, int idx, CardInfo newCard, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f, bool editCardBar = true)
         {
             if (newCard == null)
@@ -549,6 +581,10 @@ namespace ModdingUtils.Utils
             yield break;
             // return the card that was removed
             //return originalCards[idx];
+        }
+        public System.Collections.IEnumerator ReplaceCards(Player player, int[] indeces, CardInfo[] newCards, string[] twoLetterCodes = null)
+        {
+            yield return ReplaceCards(player, indeces, newCards, twoLetterCodes, true);
         }
         public System.Collections.IEnumerator ReplaceCards(Player player, int[] indeces, CardInfo[] newCards, string[] twoLetterCodes = null, bool editCardBar = true)
         {
@@ -611,6 +647,10 @@ namespace ModdingUtils.Utils
             yield break;
             // return the card that was removed
             //return originalCards[idx];
+        }
+        public System.Collections.IEnumerator ReplaceCard(Player player, CardInfo cardToReplace, CardInfo newCard, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f, SelectionType selectType = SelectionType.All)
+        {
+            yield return ReplaceCard(player, cardToReplace, newCard, twoLetterCode, forceDisplay, forceDisplayDelay, selectType, true);
         }
         public System.Collections.IEnumerator ReplaceCard(Player player, CardInfo cardToReplace, CardInfo newCard, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f, SelectionType selectType = SelectionType.All, bool editCardBar = true)
         {
