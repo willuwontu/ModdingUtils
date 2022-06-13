@@ -801,29 +801,29 @@ namespace ModdingUtils.AIMinion
             }
 
             // if there are valid cards, then have the host add them
-            string[] cardNames = cards.Select(card => card.cardName).ToArray();
-            NetworkingManager.RPC(typeof(AIMinionHandler), nameof(RPCA_AddCardsToAI), new object[] { minionID, actorID, cardNames, reassign});
+            string[] names = cards.Select(card => card.name).ToArray();
+            NetworkingManager.RPC(typeof(AIMinionHandler), nameof(RPCA_AddCardsToAI), new object[] { minionID, actorID, names, reassign});
             
             yield break;
         }
 
         [UnboundRPC]
-        private static void RPCA_AddCardsToAI(int minionID, int actorID, string[] cardNames, bool reassign)
+        private static void RPCA_AddCardsToAI(int minionID, int actorID, string[] names, bool reassign)
         {
             if (!PhotonNetwork.OfflineMode && !PhotonNetwork.IsMasterClient)
             {
                 return;
             }
-            Unbound.Instance.StartCoroutine(ExecuteWhenAIIsReady(minionID, actorID, (mID, aID) => HostAddCardsToAIWhenReady(mID, aID, cardNames, reassign)));
+            Unbound.Instance.StartCoroutine(ExecuteWhenAIIsReady(minionID, actorID, (mID, aID) => HostAddCardsToAIWhenReady(mID, aID, names, reassign)));
 
         }
-        private static IEnumerator HostAddCardsToAIWhenReady(int minionID, int actorID, string[] cardNames, bool reassign)
+        private static IEnumerator HostAddCardsToAIWhenReady(int minionID, int actorID, string[] names, bool reassign)
         {
 
             Player minion = FindPlayer.GetPlayerWithActorAndPlayerIDs(actorID, minionID);
 
             // finally, add the cards to the AI
-            CardInfo[] cards = cardNames.Select(card => Cards.instance.GetCardWithName(card)).ToArray();
+            CardInfo[] cards = names.Select(card => Cards.instance.GetCardWithObjectName(card)).ToArray();
             Cards.instance.AddCardsToPlayer(minion, cards, reassign: reassign, addToCardBar: false);
 
             yield break;

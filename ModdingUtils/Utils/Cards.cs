@@ -132,11 +132,11 @@ namespace ModdingUtils.Utils
 
                 if (addToCardBar)
                 {
-                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCard), new object[] { card.cardName, player.playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
+                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCard), new object[] { card.name, player.playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
                 }
                 else
                 {
-                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCardWithoutCardBar), new object[] { card.cardName, player.playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
+                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCardWithoutCardBar), new object[] { card.name, player.playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
                 }
 
             }
@@ -742,11 +742,11 @@ namespace ModdingUtils.Utils
             //return indecesToReplace.Count;
         }
         [UnboundRPC]
-        internal static void RPCA_AssignCard(string cardName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay, bool addToCardBar = true)
+        internal static void RPCA_AssignCard(string cardObjectName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay, bool addToCardBar = true)
         {
             Player playerToUpgrade;
 
-            CardInfo card = Cards.instance.GetCardWithName(cardName);
+            CardInfo card = Cards.instance.GetCardWithObjectName(cardObjectName);
 
             ApplyCardStats cardStats = card.gameObject.GetComponentInChildren<ApplyCardStats>();
 
@@ -799,9 +799,9 @@ namespace ModdingUtils.Utils
             
         }
         [UnboundRPC]
-        internal static void RPCA_AssignCardWithoutCardBar(string cardName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
+        internal static void RPCA_AssignCardWithoutCardBar(string cardObjectName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
         {
-            RPCA_AssignCard(cardName, playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay, false);
+            RPCA_AssignCard(cardObjectName, playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay, false);
         }
         [UnboundRPC]
         public static void RPCA_FullReset(int playerID)
@@ -840,7 +840,7 @@ namespace ModdingUtils.Utils
 
             foreach (CardInfo otherCard in cards)
             {
-                if (card.cardName == otherCard.cardName)
+                if (card.name == otherCard.name)
                 {
                     unique = false;
                 }
@@ -936,6 +936,10 @@ namespace ModdingUtils.Utils
         }
         public CardInfo[] GetPlayerCardsWithCondition(Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition)
         {
+            if (player?.data?.currentCards is null)
+            {
+                return new CardInfo[0];
+            }
             return player.data.currentCards.Where(cardinfo => condition(cardinfo, player, gun, gunAmmo, data, health, gravity, block, characterStats)).ToArray();
         }
         public int NORARITY_GetRandomCardIDWithCondition(Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition, int maxattempts = 1000)
@@ -1033,11 +1037,23 @@ namespace ModdingUtils.Utils
             }
 
         }
+        [Obsolete("GetCardID(string) is deprecated, use GetCardIDFromObjectName(string) instead.")]
         public int GetCardID(string cardName)
         {
             try
             {
                 return allCards.Where(card => card.cardName == cardName).Select(card => GetCardID(card)).First();
+            }
+            catch
+            {
+                return -1;
+            }
+        }
+        public int GetCardIDFromObjectName(string objectName)
+        {
+            try
+            {
+                return allCards.Where(card => card.name == objectName).Select(card => GetCardID(card)).First();
             }
             catch
             {
@@ -1059,9 +1075,14 @@ namespace ModdingUtils.Utils
                 return null;
             }
         }
+        [Obsolete("GetCardWithName is deprecated since multiple cards can have the same cardName. Use GetCardWithObjectName instead and provided the desired Card's .name field.")]
         public CardInfo GetCardWithName(string cardName)
         {
             return allCards.Where(card => card.cardName == cardName).First();
+        }
+        public CardInfo GetCardWithObjectName(string name)
+        {
+            return allCards.Where(card => card.name == name).First();
         }
         public CardInfo[] GetAllCardsWithCondition(CardChoice cardChoice, Player player, Func<CardInfo, Player, bool> condition)
         {
