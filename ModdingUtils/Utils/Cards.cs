@@ -742,7 +742,12 @@ namespace ModdingUtils.Utils
             //return indecesToReplace.Count;
         }
         [UnboundRPC]
-        internal static void RPCA_AssignCard(string cardObjectName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay, bool addToCardBar = true)
+        internal static void RPCA_AssignCard(string cardObjectName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
+        {
+            RPCA_AssignCard(cardObjectName, playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay, true);
+        }
+        [UnboundRPC]
+        internal static void RPCA_AssignCard(string cardObjectName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay, bool addToCardBar)
         {
             Player playerToUpgrade;
 
