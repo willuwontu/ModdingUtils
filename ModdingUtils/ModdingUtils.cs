@@ -15,6 +15,7 @@ using ModdingUtils.MonoBehaviours;
 using ModdingUtils.AIMinion;
 using ModdingUtils.GameModes;
 using On;
+using System;
 
 // requires Assembly-CSharp.dll
 // requires MMHOOK-Assembly-CSharp.dll
@@ -22,7 +23,7 @@ using On;
 namespace ModdingUtils
 {
     [BepInDependency("com.willis.rounds.unbound", BepInDependency.DependencyFlags.HardDependency)] // necessary for most modding stuff here
-    [BepInPlugin(ModId, ModName, "0.3.4")]
+    [BepInPlugin(ModId, ModName, "0.3.5")]
     [BepInProcess("Rounds.exe")]
     public class ModdingUtils : BaseUnityPlugin
     {
@@ -58,6 +59,12 @@ namespace ModdingUtils
             GameModeManager.AddHook(GameModeHooks.HookPointStart, TimeSinceBattleStart.FreezeTimer);
             GameModeManager.AddHook(GameModeHooks.HookGameStart, (gm) => AIMinionHandler.SetPlayersCanJoin(false));
             GameModeManager.AddHook(GameModeHooks.HookInitStart, (gm) => AIMinionHandler.SetPlayersCanJoin(true));
+
+            Patches.CardChoicePatchGetRanomCard.CardChoiceSpawnUniqueCardPatch =
+                ((List<BaseUnityPlugin>)typeof(BepInEx.Bootstrap.Chainloader).GetField("_plugins", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null))
+                .Exists(plugin => plugin.Info.Metadata.GUID == "pykess.rounds.plugins.cardchoicespawnuniquecardpatch");
+            if (Patches.CardChoicePatchGetRanomCard.CardChoiceSpawnUniqueCardPatch)
+                Patches.CardChoicePatchGetRanomCard.UniqueCardPatch = AppDomain.CurrentDomain.GetAssemblies().First(a => a.FullName == "CardChoiceSpawnUniqueCardPatch, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null");
         }
 
         private IEnumerator EndPickPhaseShow()

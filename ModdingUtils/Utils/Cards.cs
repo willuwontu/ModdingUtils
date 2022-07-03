@@ -13,6 +13,7 @@ using UnityEngine;
 using TMPro;
 using ModdingUtils.Extensions;
 using UnboundLib.Utils;
+using ModdingUtils.Patches;
 
 namespace ModdingUtils.Utils
 {
@@ -964,82 +965,40 @@ namespace ModdingUtils.Utils
         public CardInfo NORARITY_GetRandomCardWithCondition(Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition, int maxattempts = 1000)
         {
             // get array of all ACTIVE cards
-            CardInfo[] cards = activeCards;
+            CardInfo[] cards = activeCards.Where(card => condition(card, player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, card)).ToArray();
+            if (cards.Length == 0) return null;
 
             // pseudorandom number generator
             int rID = rng.Next(0, cards.Length); // random card index
+            return cards[rID];
 
-            int i = 0;
+        }
+        public CardInfo NORARITY_DrawRandomCardWithCondition(CardInfo[] cardsToDrawFrom, Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition, int maxattempts = 1000)
+        {
+            cardsToDrawFrom = cardsToDrawFrom.Where(card => condition(card, player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, card)).ToArray();
+            if (cardsToDrawFrom.Length == 0) return null;
 
-            // draw a random card until it's an uncommon or the maximum number of attempts was reached
-            while (!(condition(cards[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, cards[rID])) && i < maxattempts)
-            {
-                rID = rng.Next(0, cards.Length);
-                i++;
-            }
-
-            if (!(condition(cards[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, cards[rID])))
-            {
-                return null;
-            }
-            else
-            {
-                return cards[rID];
-            }
+            // pseudorandom number generator
+            int rID = rng.Next(0, cardsToDrawFrom.Length); // random card index
+            return cardsToDrawFrom[rID];
 
         }
         public CardInfo DrawRandomCardWithCondition(CardInfo[] cardsToDrawFrom, Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition, int maxattempts = 1000)
         {
+            cardsToDrawFrom = cardsToDrawFrom.Where(card => condition(card, player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, card)).ToArray();
+            if (cardsToDrawFrom.Length == 0) return null;
 
-            // pseudorandom number generator
-            int rID = rng.Next(0, cardsToDrawFrom.Length); // random card index
-
-            int i = 0;
-
-            // draw a random card until it's an uncommon or the maximum number of attempts was reached
-            while (!(condition(cardsToDrawFrom[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, cardsToDrawFrom[rID])) && i < maxattempts)
-            {
-                rID = rng.Next(0, cardsToDrawFrom.Length);
-                i++;
-            }
-
-            if (!(condition(cardsToDrawFrom[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, cardsToDrawFrom[rID])))
-            {
-                return null;
-            }
-            else
-            {
-                return cardsToDrawFrom[rID];
-            }
+            return CardChoicePatchGetRanomCard.OrignialGetRanomCard(cardsToDrawFrom).GetComponent<CardInfo>();
 
         }
         // get random card using the base-game's spawn method (which respects rarities), also satisfying some conditions - always including PlayerIsAllowedCard
         public CardInfo GetRandomCardWithCondition(Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition, int maxattempts = 1000)
         {
 
-            CardInfo card = ((GameObject)typeof(CardChoice).InvokeMember("GetRanomCard",
-                        BindingFlags.Instance | BindingFlags.InvokeMethod |
-                        BindingFlags.NonPublic, null, CardChoice.instance, new object[] { })).GetComponent<CardInfo>();
+            CardInfo[] cards = activeCards.Where(card => condition(card, player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, card)).ToArray();
+            if (cards.Length == 0) return null;
 
-            int i = 0;
-
-            // draw a random card until it's an uncommon or the maximum number of attempts was reached
-            while (!(condition(card, player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, card)) && i < maxattempts)
-            {
-                card = ((GameObject)typeof(CardChoice).InvokeMember("GetRanomCard",
-                           BindingFlags.Instance | BindingFlags.InvokeMethod |
-                           BindingFlags.NonPublic, null, CardChoice.instance, new object[] { })).GetComponent<CardInfo>();
-                i++;
-            }
-
-            if (!(condition(card, player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, card)))
-            {
-                return null;
-            }
-            else
-            {
-                return card;
-            }
+            return CardChoicePatchGetRanomCard.OrignialGetRanomCard(cards).GetComponent<CardInfo>();
 
         }
         [Obsolete("GetCardID(string) is deprecated, use GetCardIDFromObjectName(string) instead.")]
