@@ -454,6 +454,8 @@ namespace ModdingUtils.Extensions
 
             gun.GetAdditionalData().minDistanceMultiplier += minDistanceMultiplier_delta;
 
+            gun.soundGun.RefreshSoundModifiers();
+
 
         }
 
@@ -508,6 +510,8 @@ namespace ModdingUtils.Extensions
             if (gunColorEffect != null) { gunColorEffect.Destroy(); }
 
             gun.GetAdditionalData().minDistanceMultiplier -= minDistanceMultiplier_delta;
+            
+            gun.soundGun.RefreshSoundModifiers();
 
             // reset deltas
 
