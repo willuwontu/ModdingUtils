@@ -16,7 +16,7 @@ namespace ModdingUtils.AIMinion.Patches
         [HarmonyTargetMethods]
         static IEnumerable<MethodBase> RPCMethods()
         {
-            UnityEngine.Debug.Log("Fetching Offline Methods");
+            //UnityEngine.Debug.Log("Fetching Offline Methods");
             yield return AccessTools.Method(typeof(ProjectileInit), "OFFLINE_Init");
             yield return AccessTools.Method(typeof(ProjectileInit), "OFFLINE_Init_SeparateGun");
             yield return AccessTools.Method(typeof(ProjectileInit), "OFFLINE_Init_noAmmoUse");
@@ -52,7 +52,7 @@ namespace ModdingUtils.AIMinion.Patches
         [HarmonyTargetMethods]
         static IEnumerable<MethodBase> RPCMethods()
         {
-            UnityEngine.Debug.Log("Fetching RPC Methods.");
+            //UnityEngine.Debug.Log("Fetching RPC Methods.");
             yield return AccessTools.Method(typeof(ProjectileInit), "RPCA_Init", new Type[] { typeof(int), typeof(int), typeof(float), typeof(float) });
             yield return AccessTools.Method(typeof(ProjectileInit), "RPCA_Init_SeparateGun", new Type[] { typeof(int), typeof(int), typeof(int), typeof(float), typeof(float) });
             yield return AccessTools.Method(typeof(ProjectileInit), "RPCA_Init_noAmmoUse", new Type[] { typeof(int), typeof(int), typeof(float), typeof(float) });
