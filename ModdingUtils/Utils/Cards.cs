@@ -13,6 +13,7 @@ using UnityEngine;
 using TMPro;
 using ModdingUtils.Extensions;
 using UnboundLib.Utils;
+using ModdingUtils.Patches;
 
 namespace ModdingUtils.Utils
 {
@@ -89,6 +90,28 @@ namespace ModdingUtils.Utils
 
                 Traverse.Create(cardStats).Field("playerToUpgrade").SetValue(player);
 
+                if (reassign && card.GetComponent<CustomCard>() != null)
+                {
+                    try
+                    {
+
+                        Gun gun = player.GetComponent<Holding>().holdable.GetComponent<Gun>();
+                        CharacterData characterData = player.GetComponent<CharacterData>();
+                        HealthHandler healthHandler = player.GetComponent<HealthHandler>();
+                        Gravity gravity = player.GetComponent<Gravity>();
+                        Block block = player.GetComponent<Block>();
+                        GunAmmo gunAmmo = gun.GetComponentInChildren<GunAmmo>();
+                        CharacterStatModifiers characterStatModifiers = player.GetComponent<CharacterStatModifiers>();
+                        card.GetComponent<CustomCard>().OnReassignCard(player, gun, gunAmmo, characterData, healthHandler, gravity, block, characterStatModifiers);
+                    }
+                    catch (NotImplementedException)
+                    { }
+                    catch (Exception exception)
+                    {
+                        UnityEngine.Debug.LogError("[ModdingUtils] EXCEPTION: " + exception.GetType().ToString() + "\nThrown by: " + card.GetComponent<CustomCard>().GetModName() + " - " + card.cardName + " - " + "OnReassignCard(Player, Gun, GunAmmo, HealthHandler, Gravity, Block, CharacterStatModifiers)");
+                    }
+                }
+
                 if (!reassign || card.GetAdditionalData().canBeReassigned)
                 {
                     typeof(ApplyCardStats).InvokeMember("ApplyStats",
@@ -110,11 +133,11 @@ namespace ModdingUtils.Utils
 
                 if (addToCardBar)
                 {
-                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCard), new object[] { card.cardName, player.playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
+                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCard), new object[] { card.name, player.playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
                 }
                 else
                 {
-                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCardWithoutCardBar), new object[] { card.cardName, player.playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
+                    NetworkingManager.RPC(typeof(Cards), nameof(RPCA_AssignCardWithoutCardBar), new object[] { card.name, player.playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay });
                 }
 
             }
@@ -513,6 +536,7 @@ namespace ModdingUtils.Utils
             List<string> twoLetterCodes = new List<string>();
             List<float> forceDisplays = new List<float>();
             List<float> forceDisplayDelays = new List<float>();
+            List<bool> reassigns = new List<bool>();
 
             // copy player's currentCards list
             List<CardInfo> originalCards = new List<CardInfo>();
@@ -531,6 +555,7 @@ namespace ModdingUtils.Utils
                     twoLetterCodes.Add("");
                     forceDisplays.Add(0f);
                     forceDisplayDelays.Add(0f);
+                    reassigns.Add(true);
                 }
                 else
                 {
@@ -538,6 +563,7 @@ namespace ModdingUtils.Utils
                     twoLetterCodes.Add(twoLetterCode);
                     forceDisplays.Add(forceDisplay);
                     forceDisplayDelays.Add(forceDisplayDelay);
+                    reassigns.Add(false);
                 }
             }
 
@@ -551,7 +577,7 @@ namespace ModdingUtils.Utils
                 CardBarUtils.instance.ClearCardBar(player);
             }
             // then add back the new card
-            AddCardsToPlayer(player, newCards.ToArray(), true, twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray(), editCardBar);
+            AddCardsToPlayer(player, newCards.ToArray(), reassigns.ToArray(), twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray(), editCardBar);
 
             yield break;
             // return the card that was removed
@@ -580,6 +606,7 @@ namespace ModdingUtils.Utils
 
             List<CardInfo> newCardsToAssign = new List<CardInfo>();
             List<string> twoLetterCodesToAssign = new List<string>();
+            List<bool> reassigns = new List<bool>();
 
             int j = 0;
             for (int i = 0; i < originalCards.Count; i++)
@@ -588,17 +615,20 @@ namespace ModdingUtils.Utils
                 {
                     newCardsToAssign.Add(originalCards[i]);
                     twoLetterCodesToAssign.Add("");
+                    reassigns.Add(true);
                 }
                 else if (newCards[j] == null)
                 {
                     newCardsToAssign.Add(originalCards[i]);
                     twoLetterCodesToAssign.Add("");
+                    reassigns.Add(true);
                     j++;
                 }
                 else
                 {
                     newCardsToAssign.Add(newCards[j]);
                     twoLetterCodesToAssign.Add(twoLetterCodes[j]);
+                    reassigns.Add(false);
                     j++;
                 }
             }
@@ -613,7 +643,7 @@ namespace ModdingUtils.Utils
                 CardBarUtils.instance.ClearCardBar(player);
             }
             // then add back the new cards
-            AddCardsToPlayer(player, newCardsToAssign.ToArray(), true, twoLetterCodesToAssign.ToArray(), addToCardBar: editCardBar);
+            AddCardsToPlayer(player, newCardsToAssign.ToArray(), reassigns.ToArray(), twoLetterCodesToAssign.ToArray(), addToCardBar: editCardBar);
 
             yield break;
             // return the card that was removed
@@ -632,6 +662,7 @@ namespace ModdingUtils.Utils
             List<string> twoLetterCodes = new List<string>();
             List<float> forceDisplays = new List<float>();
             List<float> forceDisplayDelays = new List<float>();
+            List<bool> reassigns = new List<bool>();
 
             // copy player's currentCards list
             List<CardInfo> originalCards = new List<CardInfo>();
@@ -682,6 +713,7 @@ namespace ModdingUtils.Utils
                     twoLetterCodes.Add("");
                     forceDisplays.Add(0f);
                     forceDisplayDelays.Add(0f);
+                    reassigns.Add(true);
                 }
                 else
                 {
@@ -689,6 +721,7 @@ namespace ModdingUtils.Utils
                     twoLetterCodes.Add(twoLetterCode);
                     forceDisplays.Add(forceDisplay);
                     forceDisplayDelays.Add(forceDisplayDelay);
+                    reassigns.Add(false);
                 }
             }
 
@@ -701,7 +734,7 @@ namespace ModdingUtils.Utils
 
             if (editCardBar) { CardBarUtils.instance.ClearCardBar(player); }
             // then add back the new card
-            AddCardsToPlayer(player, newCards.ToArray(), true, twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray(), editCardBar);
+            AddCardsToPlayer(player, newCards.ToArray(), reassigns.ToArray(), twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray(), editCardBar);
             //});
 
             yield break;
@@ -710,11 +743,16 @@ namespace ModdingUtils.Utils
             //return indecesToReplace.Count;
         }
         [UnboundRPC]
-        internal static void RPCA_AssignCard(string cardName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
+        internal static void RPCA_AssignCard(string cardObjectName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
+        {
+            RPCA_AssignCard(cardObjectName, playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay, true);
+        }
+        [UnboundRPC]
+        internal static void RPCA_AssignCard(string cardObjectName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay, bool addToCardBar)
         {
             Player playerToUpgrade;
 
-            CardInfo card = Cards.instance.GetCardWithName(cardName);
+            CardInfo card = Cards.instance.GetCardWithObjectName(cardObjectName);
 
             ApplyCardStats cardStats = card.gameObject.GetComponentInChildren<ApplyCardStats>();
 
@@ -728,6 +766,28 @@ namespace ModdingUtils.Utils
 
             Traverse.Create(cardStats).Field("playerToUpgrade").SetValue(playerToUpgrade);
 
+            if (reassign && card.GetComponent<CustomCard>() != null)
+            {
+                try
+                {
+
+                    Gun gun = playerToUpgrade.GetComponent<Holding>().holdable.GetComponent<Gun>();
+                    CharacterData characterData = playerToUpgrade.GetComponent<CharacterData>();
+                    HealthHandler healthHandler = playerToUpgrade.GetComponent<HealthHandler>();
+                    Gravity gravity = playerToUpgrade.GetComponent<Gravity>();
+                    Block block = playerToUpgrade.GetComponent<Block>();
+                    GunAmmo gunAmmo = gun.GetComponentInChildren<GunAmmo>();
+                    CharacterStatModifiers characterStatModifiers = playerToUpgrade.GetComponent<CharacterStatModifiers>();
+                    card.GetComponent<CustomCard>().OnReassignCard(playerToUpgrade, gun, gunAmmo, characterData, healthHandler, gravity, block, characterStatModifiers);
+                }
+                catch (NotImplementedException)
+                { }
+                catch (Exception exception)
+                {
+                    UnityEngine.Debug.LogError("[ModdingUtils] EXCEPTION: " + exception.GetType().ToString() + "\nThrown by: " + card.GetComponent<CustomCard>().GetModName() + " - " + card.cardName + " - " + "OnReassignCard(Player, Gun, GunAmmo, HealthHandler, Gravity, Block, CharacterStatModifiers)");
+                }
+            }
+
             if (!reassign || card.GetAdditionalData().canBeReassigned)
             {
                 typeof(ApplyCardStats).InvokeMember("ApplyStats",
@@ -738,39 +798,16 @@ namespace ModdingUtils.Utils
             {
                 playerToUpgrade.data.currentCards.Add(card);
             }
-            SilentAddToCardBar(playerToUpgrade.playerID, cardStats.GetComponent<CardInfo>().sourceCard, twoLetterCode, forceDisplay, forceDisplayDelay);
+            if (addToCardBar)
+            {
+                SilentAddToCardBar(playerToUpgrade.playerID, cardStats.GetComponent<CardInfo>().sourceCard, twoLetterCode, forceDisplay, forceDisplayDelay);
+            }
             
         }
         [UnboundRPC]
-        internal static void RPCA_AssignCardWithoutCardBar(string cardName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
+        internal static void RPCA_AssignCardWithoutCardBar(string cardObjectName, int playerID, bool reassign, string twoLetterCode, float forceDisplay, float forceDisplayDelay)
         {
-            Player playerToUpgrade;
-
-            CardInfo card = Cards.instance.GetCardWithName(cardName);
-
-            ApplyCardStats cardStats = card.gameObject.GetComponentInChildren<ApplyCardStats>();
-
-            // call Start to initialize card stat components for base-game cards
-            typeof(ApplyCardStats).InvokeMember("Start",
-                                BindingFlags.Instance | BindingFlags.InvokeMethod |
-                                BindingFlags.NonPublic, null, cardStats, new object[] { });
-            cardStats.GetComponent<CardInfo>().sourceCard = card;
-
-            playerToUpgrade = (Player)PlayerManager.instance.InvokeMethod("GetPlayerWithID", playerID);
-
-            Traverse.Create(cardStats).Field("playerToUpgrade").SetValue(playerToUpgrade);
-
-            if (!reassign || card.GetAdditionalData().canBeReassigned)
-            {
-                typeof(ApplyCardStats).InvokeMember("ApplyStats",
-                                    BindingFlags.Instance | BindingFlags.InvokeMethod |
-                                    BindingFlags.NonPublic, null, cardStats, new object[] { });
-            }
-            else
-            {
-                playerToUpgrade.data.currentCards.Add(card);
-            }
-            
+            RPCA_AssignCard(cardObjectName, playerID, reassign, twoLetterCode, forceDisplay, forceDisplayDelay, false);
         }
         [UnboundRPC]
         public static void RPCA_FullReset(int playerID)
@@ -809,7 +846,7 @@ namespace ModdingUtils.Utils
 
             foreach (CardInfo otherCard in cards)
             {
-                if (card.cardName == otherCard.cardName)
+                if (card.name == otherCard.name)
                 {
                     unique = false;
                 }
@@ -905,6 +942,10 @@ namespace ModdingUtils.Utils
         }
         public CardInfo[] GetPlayerCardsWithCondition(Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition)
         {
+            if (player?.data?.currentCards is null)
+            {
+                return new CardInfo[0];
+            }
             return player.data.currentCards.Where(cardinfo => condition(cardinfo, player, gun, gunAmmo, data, health, gravity, block, characterStats)).ToArray();
         }
         public int NORARITY_GetRandomCardIDWithCondition(Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition, int maxattempts = 1000)
@@ -924,89 +965,59 @@ namespace ModdingUtils.Utils
         public CardInfo NORARITY_GetRandomCardWithCondition(Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition, int maxattempts = 1000)
         {
             // get array of all ACTIVE cards
-            CardInfo[] cards = activeCards;
+            CardInfo[] cards = activeCards.Where(card => condition(card, player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, card)).ToArray();
+            if (cards.Length == 0) return null;
 
             // pseudorandom number generator
             int rID = rng.Next(0, cards.Length); // random card index
+            return cards[rID];
 
-            int i = 0;
+        }
+        public CardInfo NORARITY_DrawRandomCardWithCondition(CardInfo[] cardsToDrawFrom, Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition, int maxattempts = 1000)
+        {
+            cardsToDrawFrom = cardsToDrawFrom.Where(card => condition(card, player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, card)).ToArray();
+            if (cardsToDrawFrom.Length == 0) return null;
 
-            // draw a random card until it's an uncommon or the maximum number of attempts was reached
-            while (!(condition(cards[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, cards[rID])) && i < maxattempts)
-            {
-                rID = rng.Next(0, cards.Length);
-                i++;
-            }
-
-            if (!(condition(cards[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, cards[rID])))
-            {
-                return null;
-            }
-            else
-            {
-                return cards[rID];
-            }
+            // pseudorandom number generator
+            int rID = rng.Next(0, cardsToDrawFrom.Length); // random card index
+            return cardsToDrawFrom[rID];
 
         }
         public CardInfo DrawRandomCardWithCondition(CardInfo[] cardsToDrawFrom, Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition, int maxattempts = 1000)
         {
+            cardsToDrawFrom = cardsToDrawFrom.Where(card => condition(card, player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, card)).ToArray();
+            if (cardsToDrawFrom.Length == 0) return null;
 
-            // pseudorandom number generator
-            int rID = rng.Next(0, cardsToDrawFrom.Length); // random card index
-
-            int i = 0;
-
-            // draw a random card until it's an uncommon or the maximum number of attempts was reached
-            while (!(condition(cardsToDrawFrom[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, cardsToDrawFrom[rID])) && i < maxattempts)
-            {
-                rID = rng.Next(0, cardsToDrawFrom.Length);
-                i++;
-            }
-
-            if (!(condition(cardsToDrawFrom[rID], player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, cardsToDrawFrom[rID])))
-            {
-                return null;
-            }
-            else
-            {
-                return cardsToDrawFrom[rID];
-            }
+            return CardChoicePatchGetRanomCard.OrignialGetRanomCard(cardsToDrawFrom).GetComponent<CardInfo>();
 
         }
         // get random card using the base-game's spawn method (which respects rarities), also satisfying some conditions - always including PlayerIsAllowedCard
         public CardInfo GetRandomCardWithCondition(Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition, int maxattempts = 1000)
         {
 
-            CardInfo card = ((GameObject)typeof(CardChoice).InvokeMember("GetRanomCard",
-                        BindingFlags.Instance | BindingFlags.InvokeMethod |
-                        BindingFlags.NonPublic, null, CardChoice.instance, new object[] { })).GetComponent<CardInfo>();
+            CardInfo[] cards = activeCards.Where(card => condition(card, player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, card)).ToArray();
+            if (cards.Length == 0) return null;
 
-            int i = 0;
-
-            // draw a random card until it's an uncommon or the maximum number of attempts was reached
-            while (!(condition(card, player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, card)) && i < maxattempts)
-            {
-                card = ((GameObject)typeof(CardChoice).InvokeMember("GetRanomCard",
-                           BindingFlags.Instance | BindingFlags.InvokeMethod |
-                           BindingFlags.NonPublic, null, CardChoice.instance, new object[] { })).GetComponent<CardInfo>();
-                i++;
-            }
-
-            if (!(condition(card, player, gun, gunAmmo, data, health, gravity, block, characterStats) && PlayerIsAllowedCard(player, card)))
-            {
-                return null;
-            }
-            else
-            {
-                return card;
-            }
+            return CardChoicePatchGetRanomCard.OrignialGetRanomCard(cards).GetComponent<CardInfo>();
 
         }
+        [Obsolete("GetCardID(string) is deprecated, use GetCardIDFromObjectName(string) instead.")]
         public int GetCardID(string cardName)
         {
             try
             {
                 return allCards.Where(card => card.cardName == cardName).Select(card => GetCardID(card)).First();
+            }
+            catch
+            {
+                return -1;
+            }
+        }
+        public int GetCardIDFromObjectName(string objectName)
+        {
+            try
+            {
+                return allCards.Where(card => card.name == objectName).Select(card => GetCardID(card)).First();
             }
             catch
             {
@@ -1028,9 +1039,14 @@ namespace ModdingUtils.Utils
                 return null;
             }
         }
+        [Obsolete("GetCardWithName is deprecated since multiple cards can have the same cardName. Use GetCardWithObjectName instead and provided the desired Card's .name field.")]
         public CardInfo GetCardWithName(string cardName)
         {
             return allCards.Where(card => card.cardName == cardName).First();
+        }
+        public CardInfo GetCardWithObjectName(string name)
+        {
+            return allCards.Where(card => card.name == name).First();
         }
         public CardInfo[] GetAllCardsWithCondition(CardChoice cardChoice, Player player, Func<CardInfo, Player, bool> condition)
         {

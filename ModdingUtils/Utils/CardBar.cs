@@ -86,18 +86,18 @@ namespace ModdingUtils.Utils
         {
             ShowCard(playerID, Cards.instance.GetCardWithID(cardID).name);
         }
-        public void ShowCard(int playerID, string cardName)
+        public void ShowCard(int playerID, string objectName)
         {
             if (PhotonNetwork.OfflineMode || PhotonNetwork.IsMasterClient)
             {
-                NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_ShowCard), new object[] { playerID, cardName });
+                NetworkingManager.RPC(typeof(CardBarUtils), nameof(RPCA_ShowCard), new object[] { playerID, objectName });
             }
         }
 
         [UnboundRPC]
-        private static void RPCA_ShowCard(int playerID, string cardName)
+        private static void RPCA_ShowCard(int playerID, string objectName)
         {
-            int cardID = Cards.instance.GetCardID(cardName);
+            int cardID = Cards.instance.GetCardIDFromObjectName(objectName);
 
             try
             {

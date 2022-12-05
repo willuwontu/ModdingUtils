@@ -19,21 +19,7 @@ namespace ModdingUtils.Extensions
         private float maxHealth_delta = 0f;
         public static void ApplyCharacterDataModifier(CharacterDataModifier characterDataModifier, CharacterData data)
         {
-            characterDataModifier.health_delta = data.health * characterDataModifier.health_mult + characterDataModifier.health_add - data.health;
-            characterDataModifier.maxHealth_delta = data.maxHealth * characterDataModifier.maxHealth_mult + characterDataModifier.maxHealth_add - data.maxHealth;
-
-            data.health += characterDataModifier.health_delta;
-            data.maxHealth += characterDataModifier.maxHealth_delta;
-
-            // update player stuff
-            if (characterDataModifier.health_delta != 0f || characterDataModifier.maxHealth_delta != 0f)
-            {
-                typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
-                    BindingFlags.Instance | BindingFlags.InvokeMethod |
-                    BindingFlags.NonPublic, null, data.stats, new object[] { });
-            }
-
-
+            characterDataModifier.ApplyCharacterDataModifier(data);
         }
         public void ApplyCharacterDataModifier(CharacterData data)
         {
@@ -54,30 +40,15 @@ namespace ModdingUtils.Extensions
         }
         public static void RemoveCharacterDataModifier(CharacterDataModifier characterDataModifier, CharacterData data, bool clear = true)
         {
-
-            data.health -= characterDataModifier.health_delta;
-            data.maxHealth -= characterDataModifier.maxHealth_delta;
-
-            // update player stuff
-            if (characterDataModifier.health_delta != 0f || characterDataModifier.maxHealth_delta != 0f)
-            {
-                typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
-                    BindingFlags.Instance | BindingFlags.InvokeMethod |
-                    BindingFlags.NonPublic, null, data.stats, new object[] { });
-            }
-
-            // reset deltas
-
-            if (clear)
-            {
-                characterDataModifier.health_delta = 0f;
-                characterDataModifier.maxHealth_delta = 0f;
-            }
-
+            characterDataModifier.RemoveCharacterDataModifier(data, clear);
         }
         public void RemoveCharacterDataModifier(CharacterData data, bool clear = true)
         {
-
+            var a = data.health;
+            var b = data.maxHealth;
+            var c = data.maxHealth - maxHealth_delta;
+            var target_health = (a * c) / b;
+            health_delta = data.health - target_health;
             data.health -= health_delta;
             data.maxHealth -= maxHealth_delta;
 
@@ -127,26 +98,7 @@ namespace ModdingUtils.Extensions
 
         public static void ApplyBlockModifier(BlockModifier blockModifier, Block block)
         {
-            blockModifier.counter_delta = block.counter * blockModifier.counter_mult + blockModifier.counter_add - block.counter;
-            blockModifier.cdMultiplier_delta = block.cdMultiplier * blockModifier.cdMultiplier_mult + blockModifier.cdMultiplier_add - block.cdMultiplier;
-            blockModifier.cdAdd_delta = block.cdAdd * blockModifier.cdAdd_mult + blockModifier.cdAdd_add - block.cdAdd;
-            blockModifier.forceToAdd_delta = block.forceToAdd * blockModifier.forceToAdd_mult + blockModifier.forceToAdd_add - block.forceToAdd;
-            blockModifier.forceToAddUp_delta = block.forceToAddUp * blockModifier.forceToAddUp_mult + blockModifier.forceToAddUp_add - block.forceToAddUp;
-            blockModifier.additionalBlocks_delta = block.additionalBlocks * blockModifier.additionalBlocks_mult + blockModifier.additionalBlocks_add - block.additionalBlocks;
-            blockModifier.healing_delta = block.healing * blockModifier.healing_mult + blockModifier.healing_add - block.healing;
-
-            foreach (GameObject objectToSpawn in blockModifier.objectsToSpawn_add)
-            {
-                block.objectsToSpawn.Add(objectToSpawn);
-            }
-
-            block.counter += blockModifier.counter_delta;
-            block.cdMultiplier += blockModifier.cdMultiplier_delta;
-            block.cdAdd += blockModifier.cdAdd_delta;
-            block.forceToAdd += blockModifier.forceToAdd_delta;
-            block.forceToAddUp += blockModifier.forceToAddUp_delta;
-            block.additionalBlocks += blockModifier.additionalBlocks_delta;
-            block.healing += blockModifier.healing_delta;
+            blockModifier.ApplyBlockModifier(block);
         }
         public void ApplyBlockModifier(Block block)
         {
@@ -173,33 +125,7 @@ namespace ModdingUtils.Extensions
         }
         public static void RemoveBlockModifier(BlockModifier blockModifier, Block block, bool clear = true)
         {
-            foreach (GameObject objectToSpawn in blockModifier.objectsToSpawn_add)
-            {
-                block.objectsToSpawn.Remove(objectToSpawn);
-            }
-
-            block.counter -= blockModifier.counter_delta;
-            block.cdMultiplier -= blockModifier.cdMultiplier_delta;
-            block.cdAdd -= blockModifier.cdAdd_delta;
-            block.forceToAdd -= blockModifier.forceToAdd_delta;
-            block.forceToAddUp -= blockModifier.forceToAddUp_delta;
-            block.additionalBlocks -= blockModifier.additionalBlocks_delta;
-            block.healing -= blockModifier.healing_delta;
-
-            // reset deltas
-
-            if (clear)
-            {
-                blockModifier.objectsToSpawn_add = new List<GameObject>();
-                blockModifier.counter_delta = 0f;
-                blockModifier.cdMultiplier_delta = 0f;
-                blockModifier.cdAdd_delta = 0f;
-                blockModifier.forceToAdd_delta = 0f;
-                blockModifier.forceToAddUp_delta = 0f;
-                blockModifier.additionalBlocks_delta = 0;
-                blockModifier.healing_delta = 0f;
-            }
-
+            blockModifier.RemoveBlockModifier(block, clear);
         }
         public void RemoveBlockModifier(Block block, bool clear = true)
         {
@@ -248,24 +174,7 @@ namespace ModdingUtils.Extensions
 
         public static void ApplyGunAmmoStatModifier(GunAmmoStatModifier gunAmmoStatModifier, GunAmmo gunAmmo)
         {
-            gunAmmoStatModifier.maxAmmo_delta = gunAmmo.maxAmmo * gunAmmoStatModifier.maxAmmo_mult + gunAmmoStatModifier.maxAmmo_add - gunAmmo.maxAmmo;
-            gunAmmoStatModifier.reloadTimeMultiplier_delta = gunAmmo.reloadTimeMultiplier * gunAmmoStatModifier.reloadTimeMultiplier_mult - gunAmmo.reloadTimeMultiplier;
-            gunAmmoStatModifier.reloadTimeAdd_delta = gunAmmoStatModifier.reloadTimeAdd_add;
-            gunAmmoStatModifier.currentAmmo_delta = (int)gunAmmo.GetFieldValue("currentAmmo") * gunAmmoStatModifier.currentAmmo_mult + gunAmmoStatModifier.currentAmmo_add - (int)gunAmmo.GetFieldValue("currentAmmo");
-
-            gunAmmo.maxAmmo += gunAmmoStatModifier.maxAmmo_delta;
-            gunAmmo.reloadTimeMultiplier += gunAmmoStatModifier.reloadTimeMultiplier_delta;
-            gunAmmo.reloadTimeAdd += gunAmmoStatModifier.reloadTimeAdd_delta;
-            gunAmmo.SetFieldValue("currentAmmo", (int)gunAmmo.GetFieldValue("currentAmmo") + gunAmmoStatModifier.currentAmmo_delta);
-
-            // if the gun is currently reloading, then set lastMaxAmmo to be the same as MaxAmmo to prevent the bullets from being drawn over the reload ring
-            if (((Gun)Traverse.Create(gunAmmo).Field("gun").GetValue()).isReloading)
-            {
-                Traverse.Create(gunAmmo).Field("lastMaxAmmo").SetValue(gunAmmo.maxAmmo);
-            }
-            // if the current ammo was changed, redraw the bullet icons
-            if (gunAmmoStatModifier.currentAmmo_delta != 0) { GunAmmoStatModifier.ReDrawCurrentBullets(gunAmmo); }
-
+            gunAmmoStatModifier.ApplyGunAmmoStatModifier(gunAmmo);
         }
         public void ApplyGunAmmoStatModifier(GunAmmo gunAmmo)
         {
@@ -290,30 +199,7 @@ namespace ModdingUtils.Extensions
         }
         public static void RemoveGunAmmoStatModifier(GunAmmoStatModifier gunAmmoStatModifier, GunAmmo gunAmmo, bool clear = true)
         {
-            gunAmmo.maxAmmo -= gunAmmoStatModifier.maxAmmo_delta;
-            gunAmmo.reloadTimeMultiplier -= gunAmmoStatModifier.reloadTimeMultiplier_delta;
-            gunAmmo.reloadTimeAdd -= gunAmmoStatModifier.reloadTimeAdd_delta;
-            gunAmmo.SetFieldValue("currentAmmo", UnityEngine.Mathf.Clamp((int)gunAmmo.GetFieldValue("currentAmmo") - gunAmmoStatModifier.currentAmmo_delta, 0, int.MaxValue));
-
-            bool flag = gunAmmoStatModifier.currentAmmo_delta != 0;
-
-            // reset deltas
-
-            if (clear)
-            {
-                gunAmmoStatModifier.maxAmmo_delta = 0;
-                gunAmmoStatModifier.reloadTimeMultiplier_delta = 0f;
-                gunAmmoStatModifier.reloadTimeAdd_delta = 0f;
-                gunAmmoStatModifier.currentAmmo_delta = 0;
-            }
-
-            // if the gun is currently reloading, then set lastMaxAmmo to be the same as MaxAmmo to prevent the bullets from being drawn over the reload ring
-            if (((Gun)Traverse.Create(gunAmmo).Field("gun").GetValue()).isReloading)
-            {
-                Traverse.Create(gunAmmo).Field("lastMaxAmmo").SetValue(gunAmmo.maxAmmo);
-            }
-            // if the current ammo was changed, redraw the bullet icons
-            if (flag) { GunAmmoStatModifier.ReDrawCurrentBullets(gunAmmo); }
+            gunAmmoStatModifier.RemoveGunAmmoStatModifier(gunAmmo, clear);
         }
         public void RemoveGunAmmoStatModifier(GunAmmo gunAmmo, bool clear = true)
         {
@@ -476,97 +362,7 @@ namespace ModdingUtils.Extensions
 
         public static void ApplyGunStatModifier(GunStatModifier gunStatModifier, Gun gun)
         {
-            // regular expressions protected me against arthritis here.
-            gunStatModifier.damage_delta = gun.damage * gunStatModifier.damage_mult + gunStatModifier.damage_add - gun.damage;
-            gunStatModifier.recoilMuiltiplier_delta = gun.recoilMuiltiplier * gunStatModifier.recoilMuiltiplier_mult + gunStatModifier.recoilMuiltiplier_add - gun.recoilMuiltiplier;
-            gunStatModifier.knockback_delta = gun.knockback * gunStatModifier.knockback_mult + gunStatModifier.knockback_add - gun.knockback;
-            gunStatModifier.attackSpeed_delta = gun.attackSpeed * gunStatModifier.attackSpeed_mult + gunStatModifier.attackSpeed_add - gun.attackSpeed;
-            gunStatModifier.projectileSpeed_delta = gun.projectileSpeed * gunStatModifier.projectileSpeed_mult + gunStatModifier.projectileSpeed_add - gun.projectileSpeed;
-            gunStatModifier.projectielSimulatonSpeed_delta = gun.projectielSimulatonSpeed * gunStatModifier.projectielSimulatonSpeed_mult + gunStatModifier.projectielSimulatonSpeed_add - gun.projectielSimulatonSpeed;
-            gunStatModifier.gravity_delta = gun.gravity * gunStatModifier.gravity_mult + gunStatModifier.gravity_add - gun.gravity;
-            gunStatModifier.damageAfterDistanceMultiplier_delta = gun.damageAfterDistanceMultiplier * gunStatModifier.damageAfterDistanceMultiplier_mult + gunStatModifier.damageAfterDistanceMultiplier_add - gun.damageAfterDistanceMultiplier;
-            gunStatModifier.bulletDamageMultiplier_delta = gun.bulletDamageMultiplier * gunStatModifier.bulletDamageMultiplier_mult + gunStatModifier.bulletDamageMultiplier_add - gun.bulletDamageMultiplier;
-            gunStatModifier.multiplySpread_delta = gun.multiplySpread * gunStatModifier.multiplySpread_mult + gunStatModifier.multiplySpread_add - gun.multiplySpread;
-            gunStatModifier.size_delta = gun.size * gunStatModifier.size_mult + gunStatModifier.size_add - gun.size;
-            gunStatModifier.timeToReachFullMovementMultiplier_delta = gun.timeToReachFullMovementMultiplier * gunStatModifier.timeToReachFullMovementMultiplier_mult + gunStatModifier.timeToReachFullMovementMultiplier_add - gun.timeToReachFullMovementMultiplier;
-            gunStatModifier.numberOfProjectiles_delta = gun.numberOfProjectiles * gunStatModifier.numberOfProjectiles_mult + gunStatModifier.numberOfProjectiles_add - gun.numberOfProjectiles;
-            gunStatModifier.bursts_delta = gun.bursts * gunStatModifier.bursts_mult + gunStatModifier.bursts_add - gun.bursts;
-            gunStatModifier.reflects_delta = gun.reflects * gunStatModifier.reflects_mult + gunStatModifier.reflects_add - gun.reflects;
-            gunStatModifier.smartBounce_delta = gun.smartBounce * gunStatModifier.smartBounce_mult + gunStatModifier.smartBounce_add - gun.smartBounce;
-            gunStatModifier.randomBounces_delta = gun.randomBounces * gunStatModifier.randomBounces_mult + gunStatModifier.randomBounces_add - gun.randomBounces;
-            gunStatModifier.timeBetweenBullets_delta = gun.timeBetweenBullets * gunStatModifier.timeBetweenBullets_mult + gunStatModifier.timeBetweenBullets_add - gun.timeBetweenBullets;
-            gunStatModifier.projectileSize_delta = gun.projectileSize * gunStatModifier.projectileSize_mult + gunStatModifier.projectileSize_add - gun.projectileSize;
-            gunStatModifier.speedMOnBounce_delta = gun.speedMOnBounce * gunStatModifier.speedMOnBounce_mult + gunStatModifier.speedMOnBounce_add - gun.speedMOnBounce;
-            gunStatModifier.dmgMOnBounce_delta = gun.dmgMOnBounce * gunStatModifier.dmgMOnBounce_mult + gunStatModifier.dmgMOnBounce_add - gun.dmgMOnBounce;
-            gunStatModifier.drag_delta = gun.drag * gunStatModifier.drag_mult + gunStatModifier.drag_add - gun.drag;
-            gunStatModifier.dragMinSpeed_delta = gun.dragMinSpeed * gunStatModifier.dragMinSpeed_mult + gunStatModifier.dragMinSpeed_add - gun.dragMinSpeed;
-            gunStatModifier.spread_delta = gun.spread * gunStatModifier.spread_mult + gunStatModifier.spread_add - gun.spread;
-            gunStatModifier.evenSpread_delta = gun.evenSpread * gunStatModifier.evenSpread_mult + gunStatModifier.evenSpread_add - gun.evenSpread;
-            gunStatModifier.percentageDamage_delta = gun.percentageDamage * gunStatModifier.percentageDamage_mult + gunStatModifier.percentageDamage_add - gun.percentageDamage;
-            gunStatModifier.slow_delta = gun.slow * gunStatModifier.slow_mult + gunStatModifier.slow_add - gun.slow;
-            gunStatModifier.destroyBulletAfter_delta = gun.destroyBulletAfter * gunStatModifier.destroyBulletAfter_mult + gunStatModifier.destroyBulletAfter_add - gun.destroyBulletAfter;
-            gunStatModifier.forceSpecificAttackSpeed_delta = gun.forceSpecificAttackSpeed * gunStatModifier.forceSpecificAttackSpeed_mult + gunStatModifier.forceSpecificAttackSpeed_add - gun.forceSpecificAttackSpeed;
-            gunStatModifier.explodeNearEnemyRange_delta = gun.explodeNearEnemyRange * gunStatModifier.explodeNearEnemyRange_mult + gunStatModifier.explodeNearEnemyRange_add - gun.explodeNearEnemyRange;
-            gunStatModifier.explodeNearEnemyDamage_delta = gun.explodeNearEnemyDamage * gunStatModifier.explodeNearEnemyDamage_mult + gunStatModifier.explodeNearEnemyDamage_add - gun.explodeNearEnemyDamage;
-            gunStatModifier.hitMovementMultiplier_delta = gun.hitMovementMultiplier * gunStatModifier.hitMovementMultiplier_mult + gunStatModifier.hitMovementMultiplier_add - gun.hitMovementMultiplier;
-            gunStatModifier.attackSpeedMultiplier_delta = gun.attackSpeedMultiplier * gunStatModifier.attackSpeedMultiplier_mult + gunStatModifier.attackSpeedMultiplier_add - gun.attackSpeedMultiplier;
-
-
-
-            gunStatModifier.minDistanceMultiplier_delta = gun.GetAdditionalData().minDistanceMultiplier * gunStatModifier.minDistanceMultiplier_mult + gunStatModifier.minDistanceMultiplier_add - gun.GetAdditionalData().minDistanceMultiplier;
-
-
-            // apply everything
-            gun.damage += gunStatModifier.damage_delta;
-            gun.recoilMuiltiplier += gunStatModifier.recoilMuiltiplier_delta;
-            gun.knockback += gunStatModifier.knockback_delta;
-            gun.attackSpeed += gunStatModifier.attackSpeed_delta;
-            gun.projectileSpeed += gunStatModifier.projectileSpeed_delta;
-            gun.projectielSimulatonSpeed += gunStatModifier.projectielSimulatonSpeed_delta;
-            gun.gravity += gunStatModifier.gravity_delta;
-            gun.damageAfterDistanceMultiplier += gunStatModifier.damageAfterDistanceMultiplier_delta;
-            gun.bulletDamageMultiplier += gunStatModifier.bulletDamageMultiplier_delta;
-            gun.multiplySpread += gunStatModifier.multiplySpread_delta;
-            gun.size += gunStatModifier.size_delta;
-            gun.timeToReachFullMovementMultiplier += gunStatModifier.timeToReachFullMovementMultiplier_delta;
-            gun.numberOfProjectiles += gunStatModifier.numberOfProjectiles_delta;
-            gun.bursts += gunStatModifier.bursts_delta;
-            gun.reflects += gunStatModifier.reflects_delta;
-            gun.smartBounce += gunStatModifier.smartBounce_delta;
-            gun.randomBounces += gunStatModifier.randomBounces_delta;
-            gun.timeBetweenBullets += gunStatModifier.timeBetweenBullets_delta;
-            gun.projectileSize += gunStatModifier.projectileSize_delta;
-            gun.speedMOnBounce += gunStatModifier.speedMOnBounce_delta;
-            gun.dmgMOnBounce += gunStatModifier.dmgMOnBounce_delta;
-            gun.drag += gunStatModifier.drag_delta;
-            gun.dragMinSpeed += gunStatModifier.dragMinSpeed_delta;
-            gun.spread += gunStatModifier.spread_delta;
-            gun.evenSpread += gunStatModifier.evenSpread_delta;
-            gun.percentageDamage += gunStatModifier.percentageDamage_delta;
-            gun.slow += gunStatModifier.slow_delta;
-            gun.destroyBulletAfter += gunStatModifier.destroyBulletAfter_delta;
-            gun.forceSpecificAttackSpeed += gunStatModifier.forceSpecificAttackSpeed_delta;
-            gun.explodeNearEnemyRange += gunStatModifier.explodeNearEnemyRange_delta;
-            gun.explodeNearEnemyDamage += gunStatModifier.explodeNearEnemyDamage_delta;
-            gun.hitMovementMultiplier += gunStatModifier.hitMovementMultiplier_delta;
-            gun.attackSpeedMultiplier += gunStatModifier.attackSpeedMultiplier_delta;
-
-            List<ObjectsToSpawn> gunObjectsToSpawn = new List<ObjectsToSpawn>(gun.objectsToSpawn);
-
-            foreach (ObjectsToSpawn objectToSpawn in gunStatModifier.objectsToSpawn_add)
-            {
-                gunObjectsToSpawn.Add(objectToSpawn);
-            }
-            gun.objectsToSpawn = gunObjectsToSpawn.ToArray();
-
-            if (gunStatModifier.projectileColor != Color.black)
-            {
-                gunStatModifier.gunColorEffect = gun.player.gameObject.AddComponent<GunColorEffect>();
-                gunStatModifier.gunColorEffect.SetColor(gunStatModifier.projectileColor);
-            }
-
-            gun.GetAdditionalData().minDistanceMultiplier += gunStatModifier.minDistanceMultiplier_delta;
-
+            gunStatModifier.ApplyGunStatModifier(gun);
         }
         public void ApplyGunStatModifier(Gun gun)
         {
@@ -658,101 +454,14 @@ namespace ModdingUtils.Extensions
 
             gun.GetAdditionalData().minDistanceMultiplier += minDistanceMultiplier_delta;
 
+            gun.soundGun.RefreshSoundModifiers();
+
 
         }
 
         public static void RemoveGunStatModifier(GunStatModifier gunStatModifier, Gun gun, bool clear = true)
         {
-            gun.damage -= gunStatModifier.damage_delta;
-            gun.recoilMuiltiplier -= gunStatModifier.recoilMuiltiplier_delta;
-            gun.knockback -= gunStatModifier.knockback_delta;
-            gun.attackSpeed -= gunStatModifier.attackSpeed_delta;
-            gun.projectileSpeed -= gunStatModifier.projectileSpeed_delta;
-            gun.projectielSimulatonSpeed -= gunStatModifier.projectielSimulatonSpeed_delta;
-            gun.gravity -= gunStatModifier.gravity_delta;
-            gun.damageAfterDistanceMultiplier -= gunStatModifier.damageAfterDistanceMultiplier_delta;
-            gun.bulletDamageMultiplier -= gunStatModifier.bulletDamageMultiplier_delta;
-            gun.multiplySpread -= gunStatModifier.multiplySpread_delta;
-            gun.size -= gunStatModifier.size_delta;
-            gun.timeToReachFullMovementMultiplier -= gunStatModifier.timeToReachFullMovementMultiplier_delta;
-            gun.numberOfProjectiles -= gunStatModifier.numberOfProjectiles_delta;
-            gun.bursts -= gunStatModifier.bursts_delta;
-            gun.reflects -= gunStatModifier.reflects_delta;
-            gun.smartBounce -= gunStatModifier.smartBounce_delta;
-            gun.randomBounces -= gunStatModifier.randomBounces_delta;
-            gun.timeBetweenBullets -= gunStatModifier.timeBetweenBullets_delta;
-            gun.projectileSize -= gunStatModifier.projectileSize_delta;
-            gun.speedMOnBounce -= gunStatModifier.speedMOnBounce_delta;
-            gun.dmgMOnBounce -= gunStatModifier.dmgMOnBounce_delta;
-            gun.drag -= gunStatModifier.drag_delta;
-            gun.dragMinSpeed -= gunStatModifier.dragMinSpeed_delta;
-            gun.spread -= gunStatModifier.spread_delta;
-            gun.evenSpread -= gunStatModifier.evenSpread_delta;
-            gun.percentageDamage -= gunStatModifier.percentageDamage_delta;
-            gun.slow -= gunStatModifier.slow_delta;
-            gun.destroyBulletAfter -= gunStatModifier.destroyBulletAfter_delta;
-            gun.forceSpecificAttackSpeed -= gunStatModifier.forceSpecificAttackSpeed_delta;
-            gun.explodeNearEnemyRange -= gunStatModifier.explodeNearEnemyRange_delta;
-            gun.explodeNearEnemyDamage -= gunStatModifier.explodeNearEnemyDamage_delta;
-            gun.hitMovementMultiplier -= gunStatModifier.hitMovementMultiplier_delta;
-            gun.attackSpeedMultiplier -= gunStatModifier.attackSpeedMultiplier_delta;
-
-            List<ObjectsToSpawn> gunObjectsToSpawn = new List<ObjectsToSpawn>(gun.objectsToSpawn);
-
-            foreach (ObjectsToSpawn objectToSpawn in gunStatModifier.objectsToSpawn_add)
-            {
-                gunObjectsToSpawn.Remove(objectToSpawn);
-            }
-            gun.objectsToSpawn = gunObjectsToSpawn.ToArray();
-
-            if (gunStatModifier.gunColorEffect != null) { gunStatModifier.gunColorEffect.Destroy(); }
-
-            gun.GetAdditionalData().minDistanceMultiplier -= gunStatModifier.minDistanceMultiplier_delta;
-
-            // reset deltas
-
-            if (clear)
-            {
-                gunStatModifier.damage_delta = 0f;
-                gunStatModifier.recoilMuiltiplier_delta = 0f;
-                gunStatModifier.knockback_delta = 0f;
-                gunStatModifier.attackSpeed_delta = 0f;
-                gunStatModifier.projectileSpeed_delta = 0f;
-                gunStatModifier.projectielSimulatonSpeed_delta = 0f;
-                gunStatModifier.gravity_delta = 0f;
-                gunStatModifier.damageAfterDistanceMultiplier_delta = 0f;
-                gunStatModifier.bulletDamageMultiplier_delta = 0f;
-                gunStatModifier.multiplySpread_delta = 0f;
-                gunStatModifier.size_delta = 0f;
-                gunStatModifier.timeToReachFullMovementMultiplier_delta = 0f;
-                gunStatModifier.numberOfProjectiles_delta = 0;
-                gunStatModifier.bursts_delta = 0;
-                gunStatModifier.reflects_delta = 0;
-                gunStatModifier.smartBounce_delta = 0;
-                gunStatModifier.randomBounces_delta = 0;
-                gunStatModifier.timeBetweenBullets_delta = 0f;
-                gunStatModifier.projectileSize_delta = 0f;
-                gunStatModifier.speedMOnBounce_delta = 0f;
-                gunStatModifier.dmgMOnBounce_delta = 0f;
-                gunStatModifier.drag_delta = 0f;
-                gunStatModifier.dragMinSpeed_delta = 0f;
-                gunStatModifier.spread_delta = 0f;
-                gunStatModifier.evenSpread_delta = 0f;
-                gunStatModifier.percentageDamage_delta = 0f;
-                gunStatModifier.slow_delta = 0f;
-                gunStatModifier.destroyBulletAfter_delta = 0f;
-                gunStatModifier.forceSpecificAttackSpeed_delta = 0f;
-                gunStatModifier.explodeNearEnemyRange_delta = 0f;
-                gunStatModifier.explodeNearEnemyDamage_delta = 0f;
-                gunStatModifier.hitMovementMultiplier_delta = 0f;
-                gunStatModifier.attackSpeedMultiplier_delta = 0f;
-
-                gunStatModifier.gunColorEffect = null;
-
-                // extra
-                gunStatModifier.minDistanceMultiplier_delta = 0f;
-            }
-
+            gunStatModifier.RemoveGunStatModifier(gun, clear);
         }
         public void RemoveGunStatModifier(Gun gun, bool clear = true)
         {
@@ -801,6 +510,8 @@ namespace ModdingUtils.Extensions
             if (gunColorEffect != null) { gunColorEffect.Destroy(); }
 
             gun.GetAdditionalData().minDistanceMultiplier -= minDistanceMultiplier_delta;
+            
+            gun.soundGun.RefreshSoundModifiers();
 
             // reset deltas
 
@@ -927,74 +638,7 @@ namespace ModdingUtils.Extensions
 
         public static void ApplyCharacterStatModifiersModifier(CharacterStatModifiersModifier characterStatModifiersModifier, CharacterStatModifiers characterStatModifiers)
         {
-            characterStatModifiersModifier.sizeMultiplier_delta = characterStatModifiers.sizeMultiplier * characterStatModifiersModifier.sizeMultiplier_mult + characterStatModifiersModifier.sizeMultiplier_add - characterStatModifiers.sizeMultiplier;
-            characterStatModifiersModifier.health_delta = characterStatModifiers.health * characterStatModifiersModifier.health_mult + characterStatModifiersModifier.health_add - characterStatModifiers.health;
-            characterStatModifiersModifier.movementSpeed_delta = characterStatModifiers.movementSpeed * characterStatModifiersModifier.movementSpeed_mult + characterStatModifiersModifier.movementSpeed_add - characterStatModifiers.movementSpeed;
-            characterStatModifiersModifier.jump_delta = characterStatModifiers.jump * characterStatModifiersModifier.jump_mult + characterStatModifiersModifier.jump_add - characterStatModifiers.jump;
-            characterStatModifiersModifier.gravity_delta = characterStatModifiers.gravity * characterStatModifiersModifier.gravity_mult + characterStatModifiersModifier.gravity_add - characterStatModifiers.gravity;
-            characterStatModifiersModifier.slow_delta = characterStatModifiers.slow * characterStatModifiersModifier.slow_mult + characterStatModifiersModifier.slow_add - characterStatModifiers.slow;
-            characterStatModifiersModifier.slowSlow_delta = characterStatModifiers.slowSlow * characterStatModifiersModifier.slowSlow_mult + characterStatModifiersModifier.slowSlow_add - characterStatModifiers.slowSlow;
-            characterStatModifiersModifier.fastSlow_delta = characterStatModifiers.fastSlow * characterStatModifiersModifier.fastSlow_mult + characterStatModifiersModifier.fastSlow_add - characterStatModifiers.fastSlow;
-            characterStatModifiersModifier.secondsToTakeDamageOver_delta = characterStatModifiers.secondsToTakeDamageOver * characterStatModifiersModifier.secondsToTakeDamageOver_mult + characterStatModifiersModifier.secondsToTakeDamageOver_add - characterStatModifiers.secondsToTakeDamageOver;
-            characterStatModifiersModifier.numberOfJumps_delta = characterStatModifiers.numberOfJumps * characterStatModifiersModifier.numberOfJumps_mult + characterStatModifiersModifier.numberOfJumps_add - characterStatModifiers.numberOfJumps;
-            characterStatModifiersModifier.regen_delta = characterStatModifiers.regen * characterStatModifiersModifier.regen_mult + characterStatModifiersModifier.regen_add - characterStatModifiers.regen;
-            characterStatModifiersModifier.lifeSteal_delta = characterStatModifiers.lifeSteal * characterStatModifiersModifier.lifeSteal_mult + characterStatModifiersModifier.lifeSteal_add - characterStatModifiers.lifeSteal;
-            characterStatModifiersModifier.respawns_delta = characterStatModifiers.respawns * characterStatModifiersModifier.respawns_mult + characterStatModifiersModifier.respawns_add - characterStatModifiers.respawns;
-            characterStatModifiersModifier.tasteOfBloodSpeed_delta = characterStatModifiers.tasteOfBloodSpeed * characterStatModifiersModifier.tasteOfBloodSpeed_mult + characterStatModifiersModifier.tasteOfBloodSpeed_add - characterStatModifiers.tasteOfBloodSpeed;
-            characterStatModifiersModifier.rageSpeed_delta = characterStatModifiers.rageSpeed * characterStatModifiersModifier.rageSpeed_mult + characterStatModifiersModifier.rageSpeed_add - characterStatModifiers.rageSpeed;
-            characterStatModifiersModifier.attackSpeedMultiplier_delta = characterStatModifiers.attackSpeedMultiplier * characterStatModifiersModifier.attackSpeedMultiplier_mult + characterStatModifiersModifier.attackSpeedMultiplier_add - characterStatModifiers.attackSpeedMultiplier;
-
-            // extra stuff from extensions
-            characterStatModifiersModifier.gravityMultiplierOnDoDamage_delta = characterStatModifiers.GetAdditionalData().gravityMultiplierOnDoDamage * characterStatModifiersModifier.gravityMultiplierOnDoDamage_mult + characterStatModifiersModifier.gravityMultiplierOnDoDamage_add - characterStatModifiers.GetAdditionalData().gravityMultiplierOnDoDamage;
-            characterStatModifiersModifier.gravityDurationOnDoDamage_delta = characterStatModifiers.GetAdditionalData().gravityDurationOnDoDamage * characterStatModifiersModifier.gravityDurationOnDoDamage_mult + characterStatModifiersModifier.gravityDurationOnDoDamage_add - characterStatModifiers.GetAdditionalData().gravityDurationOnDoDamage;
-            characterStatModifiersModifier.defaultGravityForce_delta = characterStatModifiers.GetAdditionalData().defaultGravityForce * characterStatModifiersModifier.defaultGravityForce_mult + characterStatModifiersModifier.defaultGravityForce_add - characterStatModifiers.GetAdditionalData().defaultGravityForce;
-            characterStatModifiersModifier.defaultGravityExponent_delta = characterStatModifiers.GetAdditionalData().defaultGravityExponent * characterStatModifiersModifier.defaultGravityExponent_mult + characterStatModifiersModifier.defaultGravityExponent_add - characterStatModifiers.GetAdditionalData().defaultGravityExponent;
-            characterStatModifiersModifier.murder_delta = characterStatModifiers.GetAdditionalData().murder * characterStatModifiersModifier.murder_mult + characterStatModifiersModifier.murder_add - characterStatModifiers.GetAdditionalData().murder;
-
-            characterStatModifiers.sizeMultiplier += characterStatModifiersModifier.sizeMultiplier_delta;
-            characterStatModifiers.health += characterStatModifiersModifier.health_delta;
-            characterStatModifiers.movementSpeed += characterStatModifiersModifier.movementSpeed_delta;
-            characterStatModifiers.jump += characterStatModifiersModifier.jump_delta;
-            characterStatModifiers.gravity += characterStatModifiersModifier.gravity_delta;
-            characterStatModifiers.slow += characterStatModifiersModifier.slow_delta;
-            characterStatModifiers.slowSlow += characterStatModifiersModifier.slowSlow_delta;
-            characterStatModifiers.fastSlow += characterStatModifiersModifier.fastSlow_delta;
-            characterStatModifiers.secondsToTakeDamageOver += characterStatModifiersModifier.secondsToTakeDamageOver_delta;
-            characterStatModifiers.numberOfJumps += characterStatModifiersModifier.numberOfJumps_delta;
-            characterStatModifiers.regen += characterStatModifiersModifier.regen_delta;
-            characterStatModifiers.lifeSteal += characterStatModifiersModifier.lifeSteal_delta;
-            characterStatModifiers.respawns += characterStatModifiersModifier.respawns_delta;
-            characterStatModifiers.tasteOfBloodSpeed += characterStatModifiersModifier.tasteOfBloodSpeed_delta;
-            characterStatModifiers.rageSpeed += characterStatModifiersModifier.rageSpeed_delta;
-            characterStatModifiers.attackSpeedMultiplier += characterStatModifiersModifier.attackSpeedMultiplier_delta;
-
-            // extra stuff from extensions
-            characterStatModifiers.GetAdditionalData().gravityMultiplierOnDoDamage += characterStatModifiersModifier.gravityMultiplierOnDoDamage_delta;
-            characterStatModifiers.GetAdditionalData().gravityDurationOnDoDamage += characterStatModifiersModifier.gravityDurationOnDoDamage_delta;
-            characterStatModifiers.GetAdditionalData().defaultGravityForce += characterStatModifiersModifier.defaultGravityForce_delta;
-            characterStatModifiers.GetAdditionalData().defaultGravityExponent += characterStatModifiersModifier.defaultGravityExponent_delta;
-            characterStatModifiers.GetAdditionalData().murder += characterStatModifiersModifier.murder_delta;
-
-            // special stuff
-            Player player = characterStatModifiers.GetComponent<Player>();
-            foreach (GameObject objectToAddToPlayer in characterStatModifiersModifier.objectsToAddToPlayer)
-            {
-                GameObject instantiatedObject = Object.Instantiate<GameObject>(objectToAddToPlayer, player.transform.position, player.transform.rotation, player.transform);
-
-                characterStatModifiersModifier.objectsAddedToPlayer.Add(instantiatedObject);
-                characterStatModifiers.objectsAddedToPlayer.Add(instantiatedObject);
-            }
-
-            if (characterStatModifiersModifier.respawns_delta != 0)
-            {
-                characterStatModifiers.SetFieldValue("remainingRespawns", (int)characterStatModifiers.GetFieldValue("remainingRespawns") + characterStatModifiersModifier.respawns_delta);
-            }
-
-            // update the characterStatModifiers
-            characterStatModifiers.WasUpdated();
-            typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
-                        BindingFlags.Instance | BindingFlags.InvokeMethod |
-                        BindingFlags.NonPublic, null, characterStatModifiers, new object[] { });
+            characterStatModifiersModifier.ApplyCharacterStatModifiersModifier(characterStatModifiers);
         }
         public void ApplyCharacterStatModifiersModifier(CharacterStatModifiers characterStatModifiers)
         {
@@ -1071,74 +715,7 @@ namespace ModdingUtils.Extensions
         }
         public static void RemoveCharacterStatModifiersModifier(CharacterStatModifiersModifier characterStatModifiersModifier, CharacterStatModifiers characterStatModifiers, bool clear = true)
         {
-            characterStatModifiers.sizeMultiplier -= characterStatModifiersModifier.sizeMultiplier_delta;
-            characterStatModifiers.health -= characterStatModifiersModifier.health_delta;
-            characterStatModifiers.movementSpeed -= characterStatModifiersModifier.movementSpeed_delta;
-            characterStatModifiers.jump -= characterStatModifiersModifier.jump_delta;
-            characterStatModifiers.gravity -= characterStatModifiersModifier.gravity_delta;
-            characterStatModifiers.slow -= characterStatModifiersModifier.slow_delta;
-            characterStatModifiers.slowSlow -= characterStatModifiersModifier.slowSlow_delta;
-            characterStatModifiers.fastSlow -= characterStatModifiersModifier.fastSlow_delta;
-            characterStatModifiers.secondsToTakeDamageOver -= characterStatModifiersModifier.secondsToTakeDamageOver_delta;
-            characterStatModifiers.numberOfJumps -= characterStatModifiersModifier.numberOfJumps_delta;
-            characterStatModifiers.regen -= characterStatModifiersModifier.regen_delta;
-            characterStatModifiers.lifeSteal -= characterStatModifiersModifier.lifeSteal_delta;
-            characterStatModifiers.respawns -= characterStatModifiersModifier.respawns_delta;
-            characterStatModifiers.tasteOfBloodSpeed -= characterStatModifiersModifier.tasteOfBloodSpeed_delta;
-            characterStatModifiers.rageSpeed -= characterStatModifiersModifier.rageSpeed_delta;
-            characterStatModifiers.attackSpeedMultiplier -= characterStatModifiersModifier.attackSpeedMultiplier_delta;
-
-            // extra stuff from extensions
-            characterStatModifiers.GetAdditionalData().gravityMultiplierOnDoDamage -= characterStatModifiersModifier.gravityMultiplierOnDoDamage_delta;
-            characterStatModifiers.GetAdditionalData().gravityDurationOnDoDamage -= characterStatModifiersModifier.gravityDurationOnDoDamage_delta;
-            characterStatModifiers.GetAdditionalData().defaultGravityForce -= characterStatModifiersModifier.defaultGravityForce_delta;
-            characterStatModifiers.GetAdditionalData().defaultGravityExponent -= characterStatModifiersModifier.defaultGravityExponent_delta;
-            characterStatModifiers.GetAdditionalData().murder -= characterStatModifiersModifier.murder_delta;
-
-            // special stuff
-            foreach (GameObject objectAddedToPlayer in characterStatModifiersModifier.objectsAddedToPlayer)
-            {
-                characterStatModifiers.objectsAddedToPlayer.Remove(objectAddedToPlayer);
-                if (objectAddedToPlayer != null) { Object.Destroy(objectAddedToPlayer); }
-
-            }
-
-            // reset deltas
-
-            if (clear)
-            {
-                characterStatModifiersModifier.objectsAddedToPlayer = new List<GameObject>();
-                characterStatModifiersModifier.sizeMultiplier_delta = 0f;
-                characterStatModifiersModifier.health_delta = 0f;
-                characterStatModifiersModifier.movementSpeed_delta = 0f;
-                characterStatModifiersModifier.jump_delta = 0f;
-                characterStatModifiersModifier.gravity_delta = 0f;
-                characterStatModifiersModifier.slow_delta = 0f;
-                characterStatModifiersModifier.slowSlow_delta = 0f;
-                characterStatModifiersModifier.fastSlow_delta = 0f;
-                characterStatModifiersModifier.secondsToTakeDamageOver_delta = 0f;
-                characterStatModifiersModifier.numberOfJumps_delta = 0;
-                characterStatModifiersModifier.regen_delta = 0f;
-                characterStatModifiersModifier.lifeSteal_delta = 0f;
-                characterStatModifiersModifier.respawns_delta = 0;
-                characterStatModifiersModifier.tasteOfBloodSpeed_delta = 0f;
-                characterStatModifiersModifier.rageSpeed_delta = 0f;
-                characterStatModifiersModifier.attackSpeedMultiplier_delta = 0f;
-
-                // extra stuff from extensions
-                characterStatModifiersModifier.gravityMultiplierOnDoDamage_delta = 0f;
-                characterStatModifiersModifier.gravityDurationOnDoDamage_delta = 0f;
-                characterStatModifiersModifier.defaultGravityForce_delta = 0f;
-                characterStatModifiersModifier.defaultGravityExponent_delta = 0f;
-                characterStatModifiersModifier.murder_delta = 0;
-            }
-
-            // update the characterStatModifiers
-            characterStatModifiers.WasUpdated();
-            typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
-                        BindingFlags.Instance | BindingFlags.InvokeMethod |
-                        BindingFlags.NonPublic, null, characterStatModifiers, new object[] { });
-
+            characterStatModifiersModifier.RemoveCharacterStatModifiersModifier(characterStatModifiers, clear); 
         }
         public void RemoveCharacterStatModifiersModifier(CharacterStatModifiers characterStatModifiers, bool clear = true)
         {
@@ -1226,12 +803,7 @@ namespace ModdingUtils.Extensions
 
         public static void ApplyGravityModifier(GravityModifier gravityModifier, Gravity gravity)
         {
-            gravityModifier.gravityForce_delta = gravity.gravityForce * gravityModifier.gravityForce_mult + gravityModifier.gravityForce_add - gravity.gravityForce;
-            gravityModifier.exponent_delta = gravity.exponent * gravityModifier.exponent_mult + gravityModifier.exponent_add - gravity.exponent;
-
-            gravity.gravityForce += gravityModifier.gravityForce_delta;
-            gravity.exponent += gravityModifier.exponent_delta;
-        
+            gravityModifier.ApplyGravityModifier(gravity);
         }
         public void ApplyGravityModifier(Gravity gravity)
         {
@@ -1244,18 +816,7 @@ namespace ModdingUtils.Extensions
         }
         public static void RemoveGravityModifier(GravityModifier gravityModifier, Gravity gravity, bool clear = true)
         {
-
-            gravity.gravityForce -= gravityModifier.gravityForce_delta;
-            gravity.exponent -= gravityModifier.exponent_delta;
-
-            // reset deltas
-
-            if (clear)
-            {
-                gravityModifier.gravityForce_delta = 0f;
-                gravityModifier.exponent_delta = 0f;
-            }
-
+            gravityModifier.RemoveGravityModifier(gravity, clear);
         }
         public void RemoveGravityModifier(Gravity gravity, bool clear = true)
         {
