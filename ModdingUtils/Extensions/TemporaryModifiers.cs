@@ -7,16 +7,54 @@ using UnboundLib;
 
 namespace ModdingUtils.Extensions
 {
+    public class HealthHandlerModifier
+    {
+        public float regen_add = 0f;
+        public float regen_mult = 1f;
 
+        private float regen_delta = 0f;
+
+        public static void ApplyCharacterDataModifier(HealthHandlerModifier healthHandlerModifier, HealthHandler healthHandler)
+        {
+            healthHandlerModifier.ApplyhealthHandlerModifier(healthHandler);
+        }
+        public void ApplyhealthHandlerModifier(HealthHandler healthHandler)
+        {
+            regen_delta = healthHandler.regeneration * regen_mult + regen_add - healthHandler.regeneration;
+
+            healthHandler.regeneration += regen_delta;
+
+        }
+        public static void RemoveHealthHandlerModifier(HealthHandlerModifier healthHandlerModifier, HealthHandler healthHandler, bool clear = true)
+        {
+            healthHandlerModifier.RemoveHealthHandlerModifier(healthHandler, clear);
+        }
+        public void RemoveHealthHandlerModifier(HealthHandler healthHandler, bool clear = true)
+        {
+            healthHandler.regeneration -= regen_delta;
+
+            // reset deltas
+
+            if (clear)
+            {
+                regen_delta = 0f;
+            }
+
+        }
+    }
     public class CharacterDataModifier
     {
         public float health_add = 0f;
         public float health_mult = 1f;
         public float maxHealth_add = 0f;
         public float maxHealth_mult = 1f;
+        public int numberOfJumps_add = 0;
+        public int numberOfJumps_mult = 1;
 
         private float health_delta = 0f;
         private float maxHealth_delta = 0f;
+        private int numberOfJumps_delta;
+
         public static void ApplyCharacterDataModifier(CharacterDataModifier characterDataModifier, CharacterData data)
         {
             characterDataModifier.ApplyCharacterDataModifier(data);
@@ -25,9 +63,11 @@ namespace ModdingUtils.Extensions
         {
             health_delta = data.health * health_mult + health_add - data.health;
             maxHealth_delta = data.maxHealth * maxHealth_mult + maxHealth_add - data.maxHealth;
+            numberOfJumps_delta = data.jumps * numberOfJumps_mult + numberOfJumps_add - data.jumps;
 
             data.health += health_delta;
             data.maxHealth += maxHealth_delta;
+            data.jumps += numberOfJumps_delta;
 
             // update player stuff
             if (this.health_delta != 0f || this.maxHealth_delta != 0f)
@@ -51,6 +91,12 @@ namespace ModdingUtils.Extensions
             health_delta = data.health - target_health;
             data.health -= health_delta;
             data.maxHealth -= maxHealth_delta;
+            data.jumps -= numberOfJumps_delta;
+
+            if (data.maxHealth < 1f)
+            {
+                data.maxHealth = 1f;
+            }
 
             // update player stuff
             if (this.health_delta != 0f || this.maxHealth_delta != 0f)
@@ -66,6 +112,7 @@ namespace ModdingUtils.Extensions
             {
                 health_delta = 0f;
                 maxHealth_delta = 0f;
+                numberOfJumps_delta = 0;
             }
 
         }
@@ -269,18 +316,23 @@ namespace ModdingUtils.Extensions
         public float multiplySpread_mult = 1f;
         public float size_add = 0f;
         public float size_mult = 1f;
-        public float timeToReachFullMovementMultiplier_add = 0f;
-        public float timeToReachFullMovementMultiplier_mult = 1f;
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public float timeToReachFullMovementMultiplier_add { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public float timeToReachFullMovementMultiplier_mult { get; set; }
         public int numberOfProjectiles_add = 0;
         public int numberOfProjectiles_mult = 1;
         public int bursts_add = 0;
         public int bursts_mult = 1;
         public int reflects_add = 0;
         public int reflects_mult = 1;
-        public int smartBounce_add = 0;
-        public int smartBounce_mult = 1;
-        public int randomBounces_add = 0;
-        public int randomBounces_mult = 1;
+        public int smartBounce_add { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public int smartBounce_mult { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public int randomBounces_add { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public int randomBounces_mult { get; set; }
         public float timeBetweenBullets_add = 0f;
         public float timeBetweenBullets_mult = 1f;
         public float projectileSize_add = 0f;
@@ -305,14 +357,22 @@ namespace ModdingUtils.Extensions
         public float destroyBulletAfter_mult = 1f;
         public float forceSpecificAttackSpeed_add = 0f;
         public float forceSpecificAttackSpeed_mult = 1f;
-        public float explodeNearEnemyRange_add = 0f;
-        public float explodeNearEnemyRange_mult = 1f;
-        public float explodeNearEnemyDamage_add = 0f;
-        public float explodeNearEnemyDamage_mult = 1f;
-        public float hitMovementMultiplier_add = 0f;
-        public float hitMovementMultiplier_mult = 1f;
-        public float attackSpeedMultiplier_add = 0f;
-        public float attackSpeedMultiplier_mult = 1f;
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public float explodeNearEnemyRange_add { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public float explodeNearEnemyRange_mult { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public float explodeNearEnemyDamage_add { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public float explodeNearEnemyDamage_mult { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public float hitMovementMultiplier_add { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public float hitMovementMultiplier_mult { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public float attackSpeedMultiplier_add { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public float attackSpeedMultiplier_mult { get; set; }
         public List<ObjectsToSpawn> objectsToSpawn_add = new List<ObjectsToSpawn>();
         public Color projectileColor = Color.black;
 
@@ -331,12 +391,11 @@ namespace ModdingUtils.Extensions
         private float bulletDamageMultiplier_delta;
         private float multiplySpread_delta;
         private float size_delta;
-        private float timeToReachFullMovementMultiplier_delta;
         private int numberOfProjectiles_delta;
         private int bursts_delta;
         private int reflects_delta;
-        private int smartBounce_delta;
-        private int randomBounces_delta;
+        //private int smartBounce_delta;
+        //private int randomBounces_delta;
         private float timeBetweenBullets_delta;
         private float projectileSize_delta;
         private float speedMOnBounce_delta;
@@ -349,10 +408,6 @@ namespace ModdingUtils.Extensions
         private float slow_delta;
         private float destroyBulletAfter_delta;
         private float forceSpecificAttackSpeed_delta;
-        private float explodeNearEnemyRange_delta;
-        private float explodeNearEnemyDamage_delta;
-        private float hitMovementMultiplier_delta;
-        private float attackSpeedMultiplier_delta;
 
         private GunColorEffect gunColorEffect;
 
@@ -378,12 +433,11 @@ namespace ModdingUtils.Extensions
             bulletDamageMultiplier_delta = gun.bulletDamageMultiplier * bulletDamageMultiplier_mult + bulletDamageMultiplier_add - gun.bulletDamageMultiplier;
             multiplySpread_delta = gun.multiplySpread * multiplySpread_mult + multiplySpread_add - gun.multiplySpread;
             size_delta = gun.size * size_mult + size_add - gun.size;
-            timeToReachFullMovementMultiplier_delta = gun.timeToReachFullMovementMultiplier * timeToReachFullMovementMultiplier_mult + timeToReachFullMovementMultiplier_add - gun.timeToReachFullMovementMultiplier;
             numberOfProjectiles_delta = gun.numberOfProjectiles * numberOfProjectiles_mult + numberOfProjectiles_add - gun.numberOfProjectiles;
             bursts_delta = gun.bursts * bursts_mult + bursts_add - gun.bursts;
             reflects_delta = gun.reflects * reflects_mult + reflects_add - gun.reflects;
-            smartBounce_delta = gun.smartBounce * smartBounce_mult + smartBounce_add - gun.smartBounce;
-            randomBounces_delta = gun.randomBounces * randomBounces_mult + randomBounces_add - gun.randomBounces;
+            //smartBounce_delta = gun.smartBounce * smartBounce_mult + smartBounce_add - gun.smartBounce;
+            //randomBounces_delta = gun.randomBounces * randomBounces_mult + randomBounces_add - gun.randomBounces;
             timeBetweenBullets_delta = gun.timeBetweenBullets * timeBetweenBullets_mult + timeBetweenBullets_add - gun.timeBetweenBullets;
             projectileSize_delta = gun.projectileSize * projectileSize_mult + projectileSize_add - gun.projectileSize;
             speedMOnBounce_delta = gun.speedMOnBounce * speedMOnBounce_mult + speedMOnBounce_add - gun.speedMOnBounce;
@@ -396,10 +450,6 @@ namespace ModdingUtils.Extensions
             slow_delta = gun.slow * slow_mult + slow_add - gun.slow;
             destroyBulletAfter_delta = gun.destroyBulletAfter * destroyBulletAfter_mult + destroyBulletAfter_add - gun.destroyBulletAfter;
             forceSpecificAttackSpeed_delta = gun.forceSpecificAttackSpeed * forceSpecificAttackSpeed_mult + forceSpecificAttackSpeed_add - gun.forceSpecificAttackSpeed;
-            explodeNearEnemyRange_delta = gun.explodeNearEnemyRange * explodeNearEnemyRange_mult + explodeNearEnemyRange_add - gun.explodeNearEnemyRange;
-            explodeNearEnemyDamage_delta = gun.explodeNearEnemyDamage * explodeNearEnemyDamage_mult + explodeNearEnemyDamage_add - gun.explodeNearEnemyDamage;
-            hitMovementMultiplier_delta = gun.hitMovementMultiplier * hitMovementMultiplier_mult + hitMovementMultiplier_add - gun.hitMovementMultiplier;
-            attackSpeedMultiplier_delta = gun.attackSpeedMultiplier * attackSpeedMultiplier_mult + attackSpeedMultiplier_add - gun.attackSpeedMultiplier;
 
             minDistanceMultiplier_delta = gun.GetAdditionalData().minDistanceMultiplier * minDistanceMultiplier_mult + minDistanceMultiplier_add - gun.GetAdditionalData().minDistanceMultiplier;
 
@@ -415,12 +465,11 @@ namespace ModdingUtils.Extensions
             gun.bulletDamageMultiplier += bulletDamageMultiplier_delta;
             gun.multiplySpread += multiplySpread_delta;
             gun.size += size_delta;
-            gun.timeToReachFullMovementMultiplier += timeToReachFullMovementMultiplier_delta;
             gun.numberOfProjectiles += numberOfProjectiles_delta;
             gun.bursts += bursts_delta;
             gun.reflects += reflects_delta;
-            gun.smartBounce += smartBounce_delta;
-            gun.randomBounces += randomBounces_delta;
+            //gun.smartBounce += smartBounce_delta;
+            //gun.randomBounces += randomBounces_delta;
             gun.timeBetweenBullets += timeBetweenBullets_delta;
             gun.projectileSize += projectileSize_delta;
             gun.speedMOnBounce += speedMOnBounce_delta;
@@ -433,10 +482,6 @@ namespace ModdingUtils.Extensions
             gun.slow += slow_delta;
             gun.destroyBulletAfter += destroyBulletAfter_delta;
             gun.forceSpecificAttackSpeed += forceSpecificAttackSpeed_delta;
-            gun.explodeNearEnemyRange += explodeNearEnemyRange_delta;
-            gun.explodeNearEnemyDamage += explodeNearEnemyDamage_delta;
-            gun.hitMovementMultiplier += hitMovementMultiplier_delta;
-            gun.attackSpeedMultiplier += attackSpeedMultiplier_delta;
 
             List<ObjectsToSpawn> gunObjectsToSpawn = new List<ObjectsToSpawn>(gun.objectsToSpawn);
 
@@ -476,12 +521,11 @@ namespace ModdingUtils.Extensions
             gun.bulletDamageMultiplier -= bulletDamageMultiplier_delta;
             gun.multiplySpread -= multiplySpread_delta;
             gun.size -= size_delta;
-            gun.timeToReachFullMovementMultiplier -= timeToReachFullMovementMultiplier_delta;
             gun.numberOfProjectiles -= numberOfProjectiles_delta;
             gun.bursts -= bursts_delta;
             gun.reflects -= reflects_delta;
-            gun.smartBounce -= smartBounce_delta;
-            gun.randomBounces -= randomBounces_delta;
+            //gun.smartBounce -= smartBounce_delta;
+            //gun.randomBounces -= randomBounces_delta;
             gun.timeBetweenBullets -= timeBetweenBullets_delta;
             gun.projectileSize -= projectileSize_delta;
             gun.speedMOnBounce -= speedMOnBounce_delta;
@@ -494,10 +538,6 @@ namespace ModdingUtils.Extensions
             gun.slow -= slow_delta;
             gun.destroyBulletAfter -= destroyBulletAfter_delta;
             gun.forceSpecificAttackSpeed -= forceSpecificAttackSpeed_delta;
-            gun.explodeNearEnemyRange -= explodeNearEnemyRange_delta;
-            gun.explodeNearEnemyDamage -= explodeNearEnemyDamage_delta;
-            gun.hitMovementMultiplier -= hitMovementMultiplier_delta;
-            gun.attackSpeedMultiplier -= attackSpeedMultiplier_delta;
 
             List<ObjectsToSpawn> gunObjectsToSpawn = new List<ObjectsToSpawn>(gun.objectsToSpawn);
 
@@ -528,12 +568,11 @@ namespace ModdingUtils.Extensions
                 bulletDamageMultiplier_delta = 0f;
                 multiplySpread_delta = 0f;
                 size_delta = 0f;
-                timeToReachFullMovementMultiplier_delta = 0f;
                 numberOfProjectiles_delta = 0;
                 bursts_delta = 0;
                 reflects_delta = 0;
-                smartBounce_delta = 0;
-                randomBounces_delta = 0;
+                //smartBounce_delta = 0;
+                //randomBounces_delta = 0;
                 timeBetweenBullets_delta = 0f;
                 projectileSize_delta = 0f;
                 speedMOnBounce_delta = 0f;
@@ -546,10 +585,6 @@ namespace ModdingUtils.Extensions
                 slow_delta = 0f;
                 destroyBulletAfter_delta = 0f;
                 forceSpecificAttackSpeed_delta = 0f;
-                explodeNearEnemyRange_delta = 0f;
-                explodeNearEnemyDamage_delta = 0f;
-                hitMovementMultiplier_delta = 0f;
-                attackSpeedMultiplier_delta = 0f;
 
                 gunColorEffect = null;
 
@@ -568,14 +603,18 @@ namespace ModdingUtils.Extensions
         public List<GameObject> objectsToAddToPlayer = new List<GameObject>();
         public float sizeMultiplier_add = 0f;
         public float sizeMultiplier_mult = 1f;
-        public float health_add = 0f;
-        public float health_mult = 1f;
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils. Use CharacterDataModifier instead.", true)]
+        public float health_add { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils. Use CharacterDataModifier instead.", true)]
+        public float health_mult { get; set; }
         public float movementSpeed_add = 0f;
         public float movementSpeed_mult = 1f;
         public float jump_add = 0f;
         public float jump_mult = 1f;
-        public float gravity_add = 0f;
-        public float gravity_mult = 1f;
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils. Use GravityModifier instead.", true)]
+        public float gravity_add { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils. Use GravityModifier instead.", true)]
+        public float gravity_mult { get; set; }
         public float slow_add = 0f;
         public float slow_mult = 1f;
         public float slowSlow_add = 0f;
@@ -584,20 +623,30 @@ namespace ModdingUtils.Extensions
         public float fastSlow_mult = 1f;
         public float secondsToTakeDamageOver_add = 0f;
         public float secondsToTakeDamageOver_mult = 1f;
-        public int numberOfJumps_add = 0;
-        public int numberOfJumps_mult = 1;
-        public float regen_add = 0f;
-        public float regen_mult = 1f;
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils. Use CharacterDataModifier instead.", true)]
+        public int numberOfJumps_add { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils. Use CharacterDataModifier instead.", true)]
+        public int numberOfJumps_mult { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils. Use HealthHandlerModifier instead.", true)]
+        public float regen_add { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils. Use HealthHandlerModifier instead.", true)]
+        public float regen_mult { get; set; }
         public float lifeSteal_add = 0f;
         public float lifeSteal_mult = 1f;
         public int respawns_add = 0;
         public int respawns_mult = 1;
-        public float tasteOfBloodSpeed_add = 0f;
-        public float tasteOfBloodSpeed_mult = 1f;
-        public float rageSpeed_add = 0f;
-        public float rageSpeed_mult = 1f;
-        public float attackSpeedMultiplier_add = 0f;
-        public float attackSpeedMultiplier_mult = 1f;
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public float tasteOfBloodSpeed_add { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public float tasteOfBloodSpeed_mult { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public float rageSpeed_add { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public float rageSpeed_mult { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public float attackSpeedMultiplier_add { get; set; }
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public float attackSpeedMultiplier_mult { get; set; }
 
         // extra stuff from extensions
         public float gravityMultiplierOnDoDamage_add = 0f;
@@ -613,21 +662,14 @@ namespace ModdingUtils.Extensions
 
         private List<GameObject> objectsAddedToPlayer = new List<GameObject>();
         private float sizeMultiplier_delta;
-        private float health_delta;
         private float movementSpeed_delta;
         private float jump_delta;
-        private float gravity_delta;
         private float slow_delta;
         private float slowSlow_delta;
         private float fastSlow_delta;
         private float secondsToTakeDamageOver_delta;
-        private int numberOfJumps_delta;
-        private float regen_delta;
         private float lifeSteal_delta;
         private int respawns_delta;
-        private float tasteOfBloodSpeed_delta;
-        private float rageSpeed_delta;
-        private float attackSpeedMultiplier_delta;
 
         // extra stuff from extensions
         private float gravityMultiplierOnDoDamage_delta;
@@ -643,21 +685,14 @@ namespace ModdingUtils.Extensions
         public void ApplyCharacterStatModifiersModifier(CharacterStatModifiers characterStatModifiers)
         {
             sizeMultiplier_delta = characterStatModifiers.sizeMultiplier * sizeMultiplier_mult + sizeMultiplier_add - characterStatModifiers.sizeMultiplier;
-            health_delta = characterStatModifiers.health * health_mult + health_add - characterStatModifiers.health;
             movementSpeed_delta = characterStatModifiers.movementSpeed * movementSpeed_mult + movementSpeed_add - characterStatModifiers.movementSpeed;
             jump_delta = characterStatModifiers.jump * jump_mult + jump_add - characterStatModifiers.jump;
-            gravity_delta = characterStatModifiers.gravity * gravity_mult + gravity_add - characterStatModifiers.gravity;
             slow_delta = characterStatModifiers.slow * slow_mult + slow_add - characterStatModifiers.slow;
             slowSlow_delta = characterStatModifiers.slowSlow * slowSlow_mult + slowSlow_add - characterStatModifiers.slowSlow;
             fastSlow_delta = characterStatModifiers.fastSlow * fastSlow_mult + fastSlow_add - characterStatModifiers.fastSlow;
             secondsToTakeDamageOver_delta = characterStatModifiers.secondsToTakeDamageOver * secondsToTakeDamageOver_mult + secondsToTakeDamageOver_add - characterStatModifiers.secondsToTakeDamageOver;
-            numberOfJumps_delta = characterStatModifiers.numberOfJumps * numberOfJumps_mult + numberOfJumps_add - characterStatModifiers.numberOfJumps;
-            regen_delta = characterStatModifiers.regen * regen_mult + regen_add - characterStatModifiers.regen;
             lifeSteal_delta = characterStatModifiers.lifeSteal * lifeSteal_mult + lifeSteal_add - characterStatModifiers.lifeSteal;
             respawns_delta = characterStatModifiers.respawns * respawns_mult + respawns_add - characterStatModifiers.respawns;
-            tasteOfBloodSpeed_delta = characterStatModifiers.tasteOfBloodSpeed * tasteOfBloodSpeed_mult + tasteOfBloodSpeed_add - characterStatModifiers.tasteOfBloodSpeed;
-            rageSpeed_delta = characterStatModifiers.rageSpeed * rageSpeed_mult + rageSpeed_add - characterStatModifiers.rageSpeed;
-            attackSpeedMultiplier_delta = characterStatModifiers.attackSpeedMultiplier * attackSpeedMultiplier_mult + attackSpeedMultiplier_add - characterStatModifiers.attackSpeedMultiplier;
 
             // extra stuff from extensions
             gravityMultiplierOnDoDamage_delta = characterStatModifiers.GetAdditionalData().gravityMultiplierOnDoDamage * gravityMultiplierOnDoDamage_mult + gravityMultiplierOnDoDamage_add - characterStatModifiers.GetAdditionalData().gravityMultiplierOnDoDamage;
@@ -668,22 +703,14 @@ namespace ModdingUtils.Extensions
             
             
             characterStatModifiers.sizeMultiplier += sizeMultiplier_delta;
-            characterStatModifiers.health += health_delta;
             characterStatModifiers.movementSpeed += movementSpeed_delta;
             characterStatModifiers.jump += jump_delta;
-            characterStatModifiers.gravity += gravity_delta;
             characterStatModifiers.slow += slow_delta;
             characterStatModifiers.slowSlow += slowSlow_delta;
             characterStatModifiers.fastSlow += fastSlow_delta;
             characterStatModifiers.secondsToTakeDamageOver += secondsToTakeDamageOver_delta;
-            characterStatModifiers.numberOfJumps += numberOfJumps_delta;
-            characterStatModifiers.regen += regen_delta;
             characterStatModifiers.lifeSteal += lifeSteal_delta;
             characterStatModifiers.respawns += respawns_delta;
-            characterStatModifiers.tasteOfBloodSpeed += tasteOfBloodSpeed_delta;
-            characterStatModifiers.rageSpeed += rageSpeed_delta;
-            characterStatModifiers.attackSpeedMultiplier += attackSpeedMultiplier_delta;
-
             // extra stuff from extensions
             characterStatModifiers.GetAdditionalData().gravityMultiplierOnDoDamage += gravityMultiplierOnDoDamage_delta;
             characterStatModifiers.GetAdditionalData().gravityDurationOnDoDamage += gravityDurationOnDoDamage_delta;
@@ -720,21 +747,14 @@ namespace ModdingUtils.Extensions
         public void RemoveCharacterStatModifiersModifier(CharacterStatModifiers characterStatModifiers, bool clear = true)
         {
             characterStatModifiers.sizeMultiplier -= sizeMultiplier_delta;
-            characterStatModifiers.health -= health_delta;
             characterStatModifiers.movementSpeed -= movementSpeed_delta;
             characterStatModifiers.jump -= jump_delta;
-            characterStatModifiers.gravity -= gravity_delta;
             characterStatModifiers.slow -= slow_delta;
             characterStatModifiers.slowSlow -= slowSlow_delta;
             characterStatModifiers.fastSlow -= fastSlow_delta;
             characterStatModifiers.secondsToTakeDamageOver -= secondsToTakeDamageOver_delta;
-            characterStatModifiers.numberOfJumps -= numberOfJumps_delta;
-            characterStatModifiers.regen -= regen_delta;
             characterStatModifiers.lifeSteal -= lifeSteal_delta;
             characterStatModifiers.respawns -= respawns_delta;
-            characterStatModifiers.tasteOfBloodSpeed -= tasteOfBloodSpeed_delta;
-            characterStatModifiers.rageSpeed -= rageSpeed_delta;
-            characterStatModifiers.attackSpeedMultiplier -= attackSpeedMultiplier_delta;
 
             // extra stuff from extensions
             characterStatModifiers.GetAdditionalData().gravityMultiplierOnDoDamage -= gravityMultiplierOnDoDamage_delta;
@@ -757,21 +777,14 @@ namespace ModdingUtils.Extensions
             {
                 objectsAddedToPlayer = new List<GameObject>();
                 sizeMultiplier_delta = 0f;
-                health_delta = 0f;
                 movementSpeed_delta = 0f;
                 jump_delta = 0f;
-                gravity_delta = 0f;
                 slow_delta = 0f;
                 slowSlow_delta = 0f;
                 fastSlow_delta = 0f;
                 secondsToTakeDamageOver_delta = 0f;
-                numberOfJumps_delta = 0;
-                regen_delta = 0f;
                 lifeSteal_delta = 0f;
                 respawns_delta = 0;
-                tasteOfBloodSpeed_delta = 0f;
-                rageSpeed_delta = 0f;
-                attackSpeedMultiplier_delta = 0f;
 
                 // extra stuff from extensions
                 gravityMultiplierOnDoDamage_delta = 0f;

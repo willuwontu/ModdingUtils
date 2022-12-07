@@ -7,6 +7,7 @@ namespace ModdingUtils.Patches
 {
     // patch to reset cards and effects
     [Serializable]
+    [HarmonyPriority(Priority.First)]
     [HarmonyPatch(typeof(Player), "FullReset")]
     class PlayerPatchFullReset
     {
