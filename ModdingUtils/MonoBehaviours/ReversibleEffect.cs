@@ -7,9 +7,10 @@ namespace ModdingUtils.MonoBehaviours
 {
     public class ReversibleEffect : MonoBehaviour
     {
-
         public Player player;
-        public CharacterStatModifiers characterStatModifiers;
+        [System.ObsoleteAttribute("This field will be removed in a future update to avoid confusion with the names of the temporary modifiers. Use the stats field instead.", true)]
+        public CharacterStatModifiers characterStatModifiers { get => stats; }
+        public CharacterStatModifiers stats;
         public Gun gun;
         public GunAmmo gunAmmo;
         public Gravity gravity;
@@ -26,9 +27,10 @@ namespace ModdingUtils.MonoBehaviours
         public CharacterStatModifiersModifier characterStatModifiersModifier = new CharacterStatModifiersModifier();
         public GravityModifier gravityModifier = new GravityModifier();
         public BlockModifier blockModifier = new BlockModifier();
+        public HealthHandlerModifier healthHandlerModifier = new HealthHandlerModifier();
 
         public bool applyImmediately = true;
-        private bool modifiersActive;
+        public bool modifiersActive { get; private set; }
         private bool wasActiveLastFrame = true;
 
         public int numEnemyPlayers
@@ -52,6 +54,15 @@ namespace ModdingUtils.MonoBehaviours
 
         public void Awake()
         {
+            player = gameObject.GetComponentInParent<Player>();
+            gun = player.GetComponent<Holding>().holdable.GetComponent<Gun>();
+            data = player.GetComponent<CharacterData>();
+            health = player.GetComponent<HealthHandler>();
+            gravity = player.GetComponent<Gravity>();
+            block = player.GetComponent<Block>();
+            gunAmmo = gun.GetComponentInChildren<GunAmmo>();
+            stats = player.GetComponent<CharacterStatModifiers>();
+
             OnAwake();
         }
         public virtual void OnAwake()
@@ -75,15 +86,6 @@ namespace ModdingUtils.MonoBehaviours
 
         public void Start()
         {
-            player = gameObject.GetComponentInParent<Player>();
-            gun = player.GetComponent<Holding>().holdable.GetComponent<Gun>();
-            data = player.GetComponent<CharacterData>();
-            health = player.GetComponent<HealthHandler>();
-            gravity = player.GetComponent<Gravity>();
-            block = player.GetComponent<Block>();
-            gunAmmo = gun.GetComponentInChildren<GunAmmo>();
-            characterStatModifiers = player.GetComponent<CharacterStatModifiers>();
-
             wasActiveLastFrame = Utils.PlayerStatus.PlayerAliveAndSimulated(player);
 
             OnStart();
@@ -177,10 +179,11 @@ namespace ModdingUtils.MonoBehaviours
             if (modifiersActive) { return; }
             gunStatModifier.ApplyGunStatModifier(gun);
             gunAmmoStatModifier.ApplyGunAmmoStatModifier(gunAmmo);
-            characterStatModifiersModifier.ApplyCharacterStatModifiersModifier(characterStatModifiers);
+            characterStatModifiersModifier.ApplyCharacterStatModifiersModifier(stats);
             characterDataModifier.ApplyCharacterDataModifier(data);
             gravityModifier.ApplyGravityModifier(gravity);
             blockModifier.ApplyBlockModifier(block);
+            healthHandlerModifier.ApplyhealthHandlerModifier(health);
             modifiersActive = true;
         }
         public void ClearModifiers(bool clear = true)
@@ -188,10 +191,11 @@ namespace ModdingUtils.MonoBehaviours
             if (!modifiersActive) { return; }
             gunStatModifier.RemoveGunStatModifier(gun, clear);
             gunAmmoStatModifier.RemoveGunAmmoStatModifier(gunAmmo, clear);
-            characterStatModifiersModifier.RemoveCharacterStatModifiersModifier(characterStatModifiers, clear);
+            characterStatModifiersModifier.RemoveCharacterStatModifiersModifier(stats, clear);
             characterDataModifier.RemoveCharacterDataModifier(data, clear);
             gravityModifier.RemoveGravityModifier(gravity, clear);
             blockModifier.RemoveBlockModifier(block, clear);
+            healthHandlerModifier.RemoveHealthHandlerModifier(health, clear);
             modifiersActive = false;
 
         }
@@ -205,6 +209,5 @@ namespace ModdingUtils.MonoBehaviours
         {
             livesToEffect = lives;
         }
-
     }
 }

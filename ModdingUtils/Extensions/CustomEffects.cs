@@ -51,7 +51,7 @@ namespace ModdingUtils.Extensions
             foreach (GunColorEffect gunColorEffect in gunColorEffects) { if (gunColorEffect != null) { gunColorEffect.Destroy(); } }
             GunColorEffectBase[] gunColorEffectBases = gameObject.GetComponents<GunColorEffectBase>();
             foreach (GunColorEffectBase gunColorEffectBase in gunColorEffectBases) { if (gunColorEffectBase != null) { gunColorEffectBase.Destroy(); } }
-            ReversibleEffect[] reversibleEffects = gameObject.GetComponents<ReversibleEffect>();
+            ReversibleEffect[] reversibleEffects = gameObject.GetComponentsInChildren<ReversibleEffect>();
             foreach (ReversibleEffect reversibleEffect in reversibleEffects) { if (reversibleEffect != null) { reversibleEffect.Destroy(); } }
         }
         public static void ClearReversibleEffects(GameObject gameObject)
