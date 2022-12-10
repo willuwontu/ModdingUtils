@@ -317,22 +317,23 @@ namespace ModdingUtils.Extensions
         public float size_add = 0f;
         public float size_mult = 1f;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public float timeToReachFullMovementMultiplier_add { get; set; }
+        public float timeToReachFullMovementMultiplier_add;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public float timeToReachFullMovementMultiplier_mult { get; set; }
+        public float timeToReachFullMovementMultiplier_mult;
         public int numberOfProjectiles_add = 0;
         public int numberOfProjectiles_mult = 1;
         public int bursts_add = 0;
         public int bursts_mult = 1;
         public int reflects_add = 0;
         public int reflects_mult = 1;
-        public int smartBounce_add { get; set; }
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public int smartBounce_mult { get; set; }
+        public int smartBounce_add;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public int randomBounces_add { get; set; }
+        public int smartBounce_mult;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public int randomBounces_mult { get; set; }
+        public int randomBounces_add;
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
+        public int randomBounces_mult;
         public float timeBetweenBullets_add = 0f;
         public float timeBetweenBullets_mult = 1f;
         public float projectileSize_add = 0f;
@@ -358,21 +359,21 @@ namespace ModdingUtils.Extensions
         public float forceSpecificAttackSpeed_add = 0f;
         public float forceSpecificAttackSpeed_mult = 1f;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public float explodeNearEnemyRange_add { get; set; }
+        public float explodeNearEnemyRange_add;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public float explodeNearEnemyRange_mult { get; set; }
+        public float explodeNearEnemyRange_mult;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public float explodeNearEnemyDamage_add { get; set; }
+        public float explodeNearEnemyDamage_add;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public float explodeNearEnemyDamage_mult { get; set; }
+        public float explodeNearEnemyDamage_mult;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public float hitMovementMultiplier_add { get; set; }
+        public float hitMovementMultiplier_add;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public float hitMovementMultiplier_mult { get; set; }
+        public float hitMovementMultiplier_mult;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public float attackSpeedMultiplier_add { get; set; }
+        public float attackSpeedMultiplier_add;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public float attackSpeedMultiplier_mult { get; set; }
+        public float attackSpeedMultiplier_mult;
         public List<ObjectsToSpawn> objectsToSpawn_add = new List<ObjectsToSpawn>();
         public Color projectileColor = Color.black;
 
@@ -604,17 +605,17 @@ namespace ModdingUtils.Extensions
         public float sizeMultiplier_add = 0f;
         public float sizeMultiplier_mult = 1f;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils. Use CharacterDataModifier instead.", true)]
-        public float health_add { get; set; }
+        public float health_add;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils. Use CharacterDataModifier instead.", true)]
-        public float health_mult { get; set; }
+        public float health_mult;
         public float movementSpeed_add = 0f;
         public float movementSpeed_mult = 1f;
         public float jump_add = 0f;
         public float jump_mult = 1f;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils. Use GravityModifier instead.", true)]
-        public float gravity_add { get; set; }
+        public float gravity_add;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils. Use GravityModifier instead.", true)]
-        public float gravity_mult { get; set; }
+        public float gravity_mult;
         public float slow_add = 0f;
         public float slow_mult = 1f;
         public float slowSlow_add = 0f;
@@ -624,29 +625,29 @@ namespace ModdingUtils.Extensions
         public float secondsToTakeDamageOver_add = 0f;
         public float secondsToTakeDamageOver_mult = 1f;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils. Use CharacterDataModifier instead.", true)]
-        public int numberOfJumps_add { get; set; }
+        public int numberOfJumps_add;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils. Use CharacterDataModifier instead.", true)]
-        public int numberOfJumps_mult { get; set; }
+        public int numberOfJumps_mult;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils. Use HealthHandlerModifier instead.", true)]
-        public float regen_add { get; set; }
+        public float regen_add;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils. Use HealthHandlerModifier instead.", true)]
-        public float regen_mult { get; set; }
+        public float regen_mult;
         public float lifeSteal_add = 0f;
         public float lifeSteal_mult = 1f;
         public int respawns_add = 0;
         public int respawns_mult = 1;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public float tasteOfBloodSpeed_add { get; set; }
+        public float tasteOfBloodSpeed_add;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public float tasteOfBloodSpeed_mult { get; set; }
+        public float tasteOfBloodSpeed_mult;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public float rageSpeed_add { get; set; }
+        public float rageSpeed_add;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public float rageSpeed_mult { get; set; }
+        public float rageSpeed_mult;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public float attackSpeedMultiplier_add { get; set; }
+        public float attackSpeedMultiplier_add;
         [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
-        public float attackSpeedMultiplier_mult { get; set; }
+        public float attackSpeedMultiplier_mult;
 
         // extra stuff from extensions
         public float gravityMultiplierOnDoDamage_add = 0f;
