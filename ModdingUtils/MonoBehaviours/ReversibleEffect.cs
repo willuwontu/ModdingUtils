@@ -8,8 +8,8 @@ namespace ModdingUtils.MonoBehaviours
     public class ReversibleEffect : MonoBehaviour
     {
         public Player player;
-        [System.ObsoleteAttribute("This field will be removed in a future update to avoid confusion with the names of the temporary modifiers. Use the stats field instead.", true)]
-        public CharacterStatModifiers characterStatModifiers { get => stats; }
+        [System.ObsoleteAttribute("This field will be removed in a future update to avoid confusion with the names of the temporary modifiers. Use the stats field instead.", false)]
+        public CharacterStatModifiers characterStatModifiers;
         public CharacterStatModifiers stats;
         public Gun gun;
         public GunAmmo gunAmmo;
@@ -61,7 +61,7 @@ namespace ModdingUtils.MonoBehaviours
             gravity = player.GetComponent<Gravity>();
             block = player.GetComponent<Block>();
             gunAmmo = gun.GetComponentInChildren<GunAmmo>();
-            stats = player.GetComponent<CharacterStatModifiers>();
+            characterStatModifiers = stats = player.GetComponent<CharacterStatModifiers>();
 
             OnAwake();
         }
