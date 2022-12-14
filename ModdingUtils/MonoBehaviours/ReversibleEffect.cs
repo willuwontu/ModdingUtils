@@ -61,6 +61,7 @@ namespace ModdingUtils.MonoBehaviours
             gravity = player.GetComponent<Gravity>();
             block = player.GetComponent<Block>();
             gunAmmo = gun.GetComponentInChildren<GunAmmo>();
+
             characterStatModifiers = stats = player.GetComponent<CharacterStatModifiers>();
 
             OnAwake();

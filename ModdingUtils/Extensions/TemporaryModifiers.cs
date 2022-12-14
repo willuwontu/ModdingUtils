@@ -120,7 +120,9 @@ namespace ModdingUtils.Extensions
     public class BlockModifier
     {
         public List<GameObject> objectsToSpawn_add = new List<GameObject>();
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
         public float counter_add = 0f;
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
         public float counter_mult = 1f;
         public float cdMultiplier_add = 0f;
         public float cdMultiplier_mult = 1f;
@@ -135,7 +137,6 @@ namespace ModdingUtils.Extensions
         public float healing_add = 0f;
         public float healing_mult = 1f;
 
-        private float counter_delta;
         private float cdMultiplier_delta;
         private float cdAdd_delta;
         private float forceToAdd_delta;
@@ -149,7 +150,6 @@ namespace ModdingUtils.Extensions
         }
         public void ApplyBlockModifier(Block block)
         {
-            counter_delta = block.counter * counter_mult + counter_add - block.counter;
             cdMultiplier_delta = block.cdMultiplier * cdMultiplier_mult + cdMultiplier_add - block.cdMultiplier;
             cdAdd_delta = block.cdAdd * cdAdd_mult + cdAdd_add - block.cdAdd;
             forceToAdd_delta = block.forceToAdd * forceToAdd_mult + forceToAdd_add - block.forceToAdd;
@@ -162,7 +162,6 @@ namespace ModdingUtils.Extensions
                 block.objectsToSpawn.Add(objectToSpawn);
             }
 
-            block.counter += counter_delta;
             block.cdMultiplier += cdMultiplier_delta;
             block.cdAdd += cdAdd_delta;
             block.forceToAdd += forceToAdd_delta;
@@ -181,7 +180,6 @@ namespace ModdingUtils.Extensions
                 block.objectsToSpawn.Remove(objectToSpawn);
             }
 
-            block.counter -= counter_delta;
             block.cdMultiplier -= cdMultiplier_delta;
             block.cdAdd -= cdAdd_delta;
             block.forceToAdd -= forceToAdd_delta;
@@ -194,7 +192,6 @@ namespace ModdingUtils.Extensions
             if (clear)
             {
                 objectsToSpawn_add = new List<GameObject>();
-                counter_delta = 0f;
                 cdMultiplier_delta = 0f;
                 cdAdd_delta = 0f;
                 forceToAdd_delta = 0f;
