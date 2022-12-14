@@ -49,6 +49,7 @@ namespace ModdingUtils.Utils
         public static readonly Cards instance = new Cards();
         private static readonly System.Random rng = new System.Random();
         private List<CardInfo> hiddenCards = new List<CardInfo>();
+        public ReadOnlyCollection<CardInfo> HiddenCards => new ReadOnlyCollection<CardInfo>(hiddenCards);
         private List<Action<Player, CardInfo, int>> removalCallbacks = new List<Action<Player, CardInfo, int>>();
         private List<CardInfo> allCards => ((ObservableCollection<CardInfo>)typeof(CardManager).GetField("activeCards", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null)).ToList().Concat((List<CardInfo>)typeof(CardManager).GetField("inactiveCards", BindingFlags.NonPublic | BindingFlags.Static).GetValue(null)).Concat(hiddenCards).ToList();
 
