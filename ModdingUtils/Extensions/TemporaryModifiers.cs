@@ -44,14 +44,15 @@ namespace ModdingUtils.Extensions
     }
     public class CharacterDataModifier
     {
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
         public float health_add = 0f;
+        [System.ObsoleteAttribute("This property does not work and will be removed in future versions of Modding Utils.", true)]
         public float health_mult = 1f;
         public float maxHealth_add = 0f;
         public float maxHealth_mult = 1f;
         public int numberOfJumps_add = 0;
         public int numberOfJumps_mult = 1;
 
-        private float health_delta = 0f;
         private float maxHealth_delta = 0f;
         private int numberOfJumps_delta;
 
@@ -61,16 +62,16 @@ namespace ModdingUtils.Extensions
         }
         public void ApplyCharacterDataModifier(CharacterData data)
         {
-            health_delta = data.health * health_mult + health_add - data.health;
             maxHealth_delta = data.maxHealth * maxHealth_mult + maxHealth_add - data.maxHealth;
             numberOfJumps_delta = data.jumps * numberOfJumps_mult + numberOfJumps_add - data.jumps;
 
-            data.health += health_delta;
+            float hpRatio = data.health / data.maxHealth;
             data.maxHealth += maxHealth_delta;
+            data.health = data.maxHealth * hpRatio;
             data.jumps += numberOfJumps_delta;
 
             // update player stuff
-            if (this.health_delta != 0f || this.maxHealth_delta != 0f)
+            if (this.maxHealth_delta != 0f)
             {
                 typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
                     BindingFlags.Instance | BindingFlags.InvokeMethod |
@@ -84,13 +85,9 @@ namespace ModdingUtils.Extensions
         }
         public void RemoveCharacterDataModifier(CharacterData data, bool clear = true)
         {
-            var a = data.health;
-            var b = data.maxHealth;
-            var c = data.maxHealth - maxHealth_delta;
-            var target_health = (a * c) / b;
-            health_delta = data.health - target_health;
-            data.health -= health_delta;
+            float hpRatio = data.health / data.maxHealth;
             data.maxHealth -= maxHealth_delta;
+            data.health = data.maxHealth * hpRatio;
             data.jumps -= numberOfJumps_delta;
 
             if (data.maxHealth < 1f)
@@ -99,7 +96,7 @@ namespace ModdingUtils.Extensions
             }
 
             // update player stuff
-            if (this.health_delta != 0f || this.maxHealth_delta != 0f)
+            if (this.maxHealth_delta != 0f)
             {
                 typeof(CharacterStatModifiers).InvokeMember("ConfigureMassAndSize",
                     BindingFlags.Instance | BindingFlags.InvokeMethod |
@@ -110,7 +107,6 @@ namespace ModdingUtils.Extensions
 
             if (clear)
             {
-                health_delta = 0f;
                 maxHealth_delta = 0f;
                 numberOfJumps_delta = 0;
             }

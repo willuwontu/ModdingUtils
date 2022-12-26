@@ -571,12 +571,18 @@ namespace ModdingUtils.Utils
             // now we remove all of the cards from the player
             RemoveAllCardsFromPlayer(player, editCardBar);
 
-            yield return new WaitForSecondsRealtime(0.1f);
+            for (int i = 0; i < 20; i++)
+            {
+                yield return null;
+            }
 
             if (editCardBar)
             {
                 CardBarUtils.instance.ClearCardBar(player);
             }
+
+            yield return null;
+
             // then add back the new card
             AddCardsToPlayer(player, newCards.ToArray(), reassigns.ToArray(), twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray(), editCardBar);
 
@@ -637,12 +643,18 @@ namespace ModdingUtils.Utils
             // now we remove all of the cards from the player
             RemoveAllCardsFromPlayer(player, editCardBar);
 
-            yield return new WaitForSecondsRealtime(0.1f);
+            for (int i = 0; i < 20; i++)
+            {
+                yield return null;
+            }
 
             if (editCardBar)
             {
                 CardBarUtils.instance.ClearCardBar(player);
             }
+
+            yield return null;
+
             // then add back the new cards
             AddCardsToPlayer(player, newCardsToAssign.ToArray(), reassigns.ToArray(), twoLetterCodesToAssign.ToArray(), addToCardBar: editCardBar);
 
@@ -729,11 +741,18 @@ namespace ModdingUtils.Utils
             // now we remove all of the cards from the player
             RemoveAllCardsFromPlayer(player, editCardBar);
 
-            //Unbound.Instance.ExecuteAfterSeconds(0.1f, () =>
-            //{
-            yield return new WaitForSecondsRealtime(0.1f);
+            for (int i = 0; i < 20; i++)
+            {
+                yield return null;
+            }
 
-            if (editCardBar) { CardBarUtils.instance.ClearCardBar(player); }
+            if (editCardBar)
+            {
+                CardBarUtils.instance.ClearCardBar(player);
+            }
+
+            yield return null;
+
             // then add back the new card
             AddCardsToPlayer(player, newCards.ToArray(), reassigns.ToArray(), twoLetterCodes.ToArray(), forceDisplays.ToArray(), forceDisplayDelays.ToArray(), editCardBar);
             //});
@@ -933,9 +952,23 @@ namespace ModdingUtils.Utils
                 blacklisted = true;
             }
 
-            return !blacklisted && (card.allowMultiple || player.data.currentCards.All(cardinfo => cardinfo.name != card.name));
+            bool customFlags = true;
+
+            if (cardValidationFunctions.Count > 0)
+            {
+                customFlags = !(cardValidationFunctions.Any(f => { bool flag = true; try { flag = f(player, card); } catch { flag = true; } return !flag; }));
+            }
+
+            return !blacklisted && (card.allowMultiple || player.data.currentCards.All(cardinfo => cardinfo.gameObject.name != card.gameObject.name)) && customFlags;
 
         }
+
+        public void AddCardValidationFunction(Func<Player, CardInfo, bool> function)
+        {
+            cardValidationFunctions.Add(function);
+        }
+
+        List<Func<Player, CardInfo, bool>> cardValidationFunctions = new List<Func<Player, CardInfo, bool>>();
 
         public int CountPlayerCardsWithCondition(Player player, Gun gun, GunAmmo gunAmmo, CharacterData data, HealthHandler health, Gravity gravity, Block block, CharacterStatModifiers characterStats, Func<CardInfo, Player, Gun, GunAmmo, CharacterData, HealthHandler, Gravity, Block, CharacterStatModifiers, bool> condition)
         {
