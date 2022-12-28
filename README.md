@@ -3,6 +3,11 @@
 
 This mod provides several utilities that were developed over time for specific mods that may be useful to the modding community at large.
 
+#### v4.0
+---------
+
+- Remove Card From Player is now handled by Unbound.
+
 #### v3.5
 ---------
 

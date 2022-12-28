@@ -14,7 +14,6 @@ namespace ModdingUtils.Patches
         private static void Prefix(Player __instance)
         {
             CustomEffects.DestroyAllEffects(__instance.gameObject);
-            __instance.data.currentCards = new List<CardInfo> { };
         }
     }
 }
