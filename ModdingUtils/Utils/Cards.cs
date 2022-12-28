@@ -468,37 +468,10 @@ namespace ModdingUtils.Utils
         }
         public CardInfo[] RemoveAllCardsFromPlayer(Player player, bool clearBar = true)
         {
-            Gun gun = player.GetComponent<Holding>().holdable.GetComponent<Gun>();
-            CharacterData characterData = player.GetComponent<CharacterData>();
-            HealthHandler healthHandler = player.GetComponent<HealthHandler>();
-            Gravity gravity = player.GetComponent<Gravity>();
-            Block block = player.GetComponent<Block>();
-            GunAmmo gunAmmo = gun.GetComponentInChildren<GunAmmo>();
-            CharacterStatModifiers characterStatModifiers = player.GetComponent<CharacterStatModifiers>();
-
-            // copy currentCards
             List<CardInfo> cards = new List<CardInfo>();
             foreach (CardInfo origCard in player.data.currentCards)
             {
                 cards.Add(origCard);
-            }
-
-            // for custom cards, call OnRemoveCard
-            foreach (CardInfo card in player.data.currentCards)
-            {
-                if (card.GetComponent<CustomCard>() != null)
-                {
-                    try
-                    {
-                        card.GetComponent<CustomCard>().OnRemoveCard(player, gun, gunAmmo, characterData, healthHandler, gravity, block, characterStatModifiers);
-                    }
-                    catch (NotImplementedException)
-                    { }
-                    catch (Exception exception)
-                    {
-                        UnityEngine.Debug.LogError("[ModdingUtils] EXCEPTION: " + exception.GetType().ToString() + "\nThrown by: " + card.GetComponent<CustomCard>().GetModName() + " - " + card.cardName + " - " + "OnRemoveCard(Player, Gun, GunAmmo, HealthHandler, Gravity, Block, CharacterStatModifiers)");
-                    }
-                }
             }
 
             if (PhotonNetwork.OfflineMode)
@@ -522,7 +495,6 @@ namespace ModdingUtils.Utils
             }
 
             return cards.ToArray(); // return the removed cards
-
         }
         public System.Collections.IEnumerator ReplaceCard(Player player, int idx, CardInfo newCard, string twoLetterCode = "", float forceDisplay = 0f, float forceDisplayDelay = 0f)
         {
@@ -960,7 +932,6 @@ namespace ModdingUtils.Utils
             }
 
             return !blacklisted && (card.allowMultiple || player.data.currentCards.All(cardinfo => cardinfo.gameObject.name != card.gameObject.name)) && customFlags;
-
         }
 
         public void AddCardValidationFunction(Func<Player, CardInfo, bool> function)
