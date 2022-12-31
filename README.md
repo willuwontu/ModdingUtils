@@ -3,6 +3,18 @@
 
 This mod provides several utilities that were developed over time for specific mods that may be useful to the modding community at large.
 
+#### v4.2
+---------
+- Fixed Hit Surface Effect applying to Emp and Bombs Away projectiles.
+
+#### v4.2
+---------
+- Added `AudioMixerFixer` as a utility mono for custom sounds.
+
+#### v4.1
+---------
+- Fixes an issue where readding cards would result in objectstospawn stacking up.
+
 #### v4.0
 ---------
 
