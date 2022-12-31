@@ -23,7 +23,7 @@ using System;
 namespace ModdingUtils
 {
     [BepInDependency("com.willis.rounds.unbound", BepInDependency.DependencyFlags.HardDependency)] // necessary for most modding stuff here
-    [BepInPlugin(ModId, ModName, "0.4.2")]
+    [BepInPlugin(ModId, ModName, "0.4.3")]
     [BepInProcess("Rounds.exe")]
     public class ModdingUtils : BaseUnityPlugin
     {
@@ -65,6 +65,9 @@ namespace ModdingUtils
                 .Exists(plugin => plugin.Info.Metadata.GUID == "pykess.rounds.plugins.cardchoicespawnuniquecardpatch");
             if (Patches.CardChoicePatchGetRanomCard.CardChoiceSpawnUniqueCardPatch)
                 Patches.CardChoicePatchGetRanomCard.UniqueCardPatch = AppDomain.CurrentDomain.GetAssemblies().First(a => a.FullName == "CardChoiceSpawnUniqueCardPatch, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null");
+
+            ((GameObject)Resources.Load("Bullet_EMP")).AddComponent<StopRecursion>();
+            ((GameObject)Resources.Load("Bullet_NoTrail")).AddComponent<StopRecursion>();
         }
 
         private IEnumerator EndPickPhaseShow()
