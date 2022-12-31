@@ -23,7 +23,7 @@ using System;
 namespace ModdingUtils
 {
     [BepInDependency("com.willis.rounds.unbound", BepInDependency.DependencyFlags.HardDependency)] // necessary for most modding stuff here
-    [BepInPlugin(ModId, ModName, "0.4.1")]
+    [BepInPlugin(ModId, ModName, "0.4.2")]
     [BepInProcess("Rounds.exe")]
     public class ModdingUtils : BaseUnityPlugin
     {
