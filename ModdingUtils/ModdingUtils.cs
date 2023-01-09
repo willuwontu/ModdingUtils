@@ -23,7 +23,7 @@ using System;
 namespace ModdingUtils
 {
     [BepInDependency("com.willis.rounds.unbound", BepInDependency.DependencyFlags.HardDependency)] // necessary for most modding stuff here
-    [BepInPlugin(ModId, ModName, "0.4.4")]
+    [BepInPlugin(ModId, ModName, "0.4.5")]
     [BepInProcess("Rounds.exe")]
     public class ModdingUtils : BaseUnityPlugin
     {
@@ -68,6 +68,17 @@ namespace ModdingUtils
 
             ((GameObject)Resources.Load("Bullet_EMP")).AddComponent<StopRecursion>();
             ((GameObject)Resources.Load("Bullet_NoTrail")).AddComponent<StopRecursion>();
+
+            GameObject[] allObj = Resources.FindObjectsOfTypeAll<GameObject>();
+
+            foreach (GameObject obj in allObj)
+            {
+                Utils.AudioMixerFixer[] audioFixers = obj.GetComponentsInChildren<Utils.AudioMixerFixer>();
+                foreach (var fixer in audioFixers)
+                {
+                    fixer.RunFix();
+                }
+            }
         }
 
         private IEnumerator EndPickPhaseShow()
