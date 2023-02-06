@@ -23,20 +23,19 @@ using System;
 namespace ModdingUtils
 {
     [BepInDependency("com.willis.rounds.unbound", BepInDependency.DependencyFlags.HardDependency)] // necessary for most modding stuff here
-    [BepInPlugin(ModId, ModName, "0.4.5")]
+    [BepInPlugin(ModId, ModName, "0.4.6")]
     [BepInProcess("Rounds.exe")]
     public class ModdingUtils : BaseUnityPlugin
     {
         private void Awake()
         {
             new Harmony(ModId).PatchAll();
+            gameObject.AddComponent<InterfaceGameModeHooksManager>();
         }
         private void Start()
         {
             // register credits with unbound
             Unbound.RegisterCredits(ModName, new string[] { "Pykess", "BossSloth (Migration of several tools from PCE)", "Willuwontu (game mode hooks interface)" }, new string[] { "github", "Support Pykess" }, new string[] { "https://github.com/Rounds-Modding/ModdingUtils", "https://ko-fi.com/pykess" });
-
-            gameObject.AddComponent<InterfaceGameModeHooksManager>();
 
             GameModeManager.AddHook(GameModeHooks.HookPickEnd, (gm) => EndPickPhaseShow());
 
@@ -69,16 +68,19 @@ namespace ModdingUtils
             ((GameObject)Resources.Load("Bullet_EMP")).AddComponent<StopRecursion>();
             ((GameObject)Resources.Load("Bullet_NoTrail")).AddComponent<StopRecursion>();
 
-            GameObject[] allObj = Resources.FindObjectsOfTypeAll<GameObject>();
-
-            foreach (GameObject obj in allObj)
+            this.ExecuteAfterSeconds(5f, () =>
             {
-                Utils.AudioMixerFixer[] audioFixers = obj.GetComponentsInChildren<Utils.AudioMixerFixer>();
-                foreach (var fixer in audioFixers)
+                GameObject[] allObj = Resources.FindObjectsOfTypeAll<GameObject>();
+
+                foreach (GameObject obj in allObj)
                 {
-                    fixer.RunFix();
+                    Utils.AudioMixerFixer[] audioFixers = obj.GetComponentsInChildren<Utils.AudioMixerFixer>();
+                    foreach (var fixer in audioFixers)
+                    {
+                        fixer.RunFix();
+                    }
                 }
-            }
+            });
         }
 
         private IEnumerator EndPickPhaseShow()
