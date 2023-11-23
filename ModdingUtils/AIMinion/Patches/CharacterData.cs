@@ -22,7 +22,7 @@ namespace ModdingUtils.AIMinion.Patches
             {
                     "Default"
             }));
-            return AIMinionHandler.playersCanJoin;
+            return AIMinionHandler.playersCanJoin || AIMinionHandler.sandbox;
         }
     }
 }

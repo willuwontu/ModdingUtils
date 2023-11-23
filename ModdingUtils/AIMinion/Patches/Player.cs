@@ -62,9 +62,7 @@ namespace ModdingUtils.AIMinion.Patches
     {
         private static bool Prefix(Player __instance)
         {
-
-            return AIMinionHandler.playersCanJoin;
-
+            return AIMinionHandler.playersCanJoin || AIMinionHandler.sandbox;
         }
     }
     // patch to prevent unwanted registering of AIs online
@@ -77,7 +75,7 @@ namespace ModdingUtils.AIMinion.Patches
         {
             __instance.playerID = ID;
             __instance.SetColors();
-            return AIMinionHandler.playersCanJoin;
+            return AIMinionHandler.playersCanJoin || AIMinionHandler.sandbox;
         }
     }
     // patch to prevent unwanted registering of AIs online
@@ -89,7 +87,7 @@ namespace ModdingUtils.AIMinion.Patches
         private static bool Prefix(Player __instance, int ID)
         {
             __instance.teamID = ID;
-            return AIMinionHandler.playersCanJoin;
+            return AIMinionHandler.playersCanJoin || AIMinionHandler.sandbox;
         }
     }
     // patch to prevent unwanted registering of AIs online
@@ -100,7 +98,7 @@ namespace ModdingUtils.AIMinion.Patches
     {
         private static bool Prefix(Player __instance)
         {
-            return AIMinionHandler.playersCanJoin;
+            return AIMinionHandler.playersCanJoin || AIMinionHandler.sandbox;
         }
     }
     // patch to prevent unwanted registering of AIs online
@@ -111,7 +109,7 @@ namespace ModdingUtils.AIMinion.Patches
     {
         private static bool Prefix(Player __instance)
         {
-            return AIMinionHandler.playersCanJoin;
+            return AIMinionHandler.playersCanJoin || AIMinionHandler.sandbox;
         }
     }
 }
